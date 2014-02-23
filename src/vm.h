@@ -17,13 +17,12 @@ typedef struct {
     // Keep track of how many objects are within the stack.
     int stack_size;
 
-    // GC
     struct gc* gc;
 } vm_t;
 
 // VM
-vm_t* new_vm();
-void free_vm(vm_t*);
+vm_t* vm_new();
+void vm_free(vm_t*);
 
 void push_stack(vm_t*, value_t*);
 value_t* pop_stack(vm_t*);

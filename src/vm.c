@@ -6,7 +6,7 @@
 #include "gc.h"
 
 vm_t* 
-new_vm() {
+vm_new() {
     vm_t* self = malloc(sizeof(vm_t));
     self->stack_size = 0;
     //self->gc = new_gc();
@@ -14,13 +14,13 @@ new_vm() {
 }
 
 void 
-free_vm(vm_t* self) {
+vm_free(vm_t* self) {
 
     // Clear the stack.
     if (self->stack_size > 0) {
         // We only need to free allocated slots.
         for (int i = 0; i < self->stack_size; i++) {
-            free_value(self->stack[i]);
+            value_free(self->stack[i]);
         }
     }
 

@@ -24,8 +24,8 @@ typedef struct value {
 
 } value_t;
 
-value_t* new_int(int);
-value_t* new_vec(value_t*, value_t*);
-void free_value(value_t*);
+value_t* int_new(int);
+value_t* vec_new(value_t*, value_t*);
+void value_free(value_t*);
 
 #endif
