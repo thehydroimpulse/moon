@@ -16,3 +16,15 @@
 *.exe
 *.out
 *.app
+
+bin/
+test/
+
+CMakeCache.txt
+CMakeFiles
+Makefile
+cmake_install.cmake
+install_manifest.txt
+testgc
+gc
+Testing
