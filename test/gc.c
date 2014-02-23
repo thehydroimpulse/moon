@@ -3,6 +3,7 @@
 
 #include <src/vm.h>
 #include <src/gc.h>
+#include <src/value.h>
 
 static void test_vm_new() {
     vm_t* vm = new_vm();
@@ -47,60 +48,10 @@ static void test_stack_pop() {
     free_vm(vm);
 }
 
-static void test_gc_new() {
+static void test_new_gc() {
     gc_t* gc = new_gc();
-    assert(gc->liveset != NULL);
-    assert(gc->liveset->size == 0);
-
+    assert(gc->roots_size == 0);
     free_gc(gc);
-}
-
-static void test_new_gc_liveset() {
-    gc_liveset_t* set = new_gc_liveset();
-    assert(set->size == 0);
-    assert(set->first == NULL);
-    free_gc_liveset(set);
-}
-
-static void test_liveset_gc_iterator() {
-    value_t* a = new_int(11);
-    gc_object_t* obj = new_gc_object(a);
-    gc_liveset_t* set = new_gc_liveset();
-    set->first = obj;
-    set->size  = 1;
-
-    // Create a new gc_liveset iterator
-    gc_liveset_iter_t* iter = new_gc_liveset_iterator(set);
-    assert(next_gc_liveset_iterator(iter) == obj);
-
-    free_gc_liveset_iterator(iter);
-    free_gc_liveset(set);
-}
-
-static void test_liveset_gc_append() {
-    value_t* a = new_int(55);
-    gc_object_t* obj = new_gc_object(a);
-    gc_liveset_t* set = new_gc_liveset();
-    append_gc_liveset(set, obj);
-    assert(set->size == 1);
-}
-
-static void test_new_gc_object() {
-    value_t* a = new_int(77);
-    gc_object_t* obj = new_gc_object(a);
-    assert(obj->value == a);
-    assert(obj->next == NULL);
-    assert(obj->marked == 0);
-
-    free_gc_object(obj);
-}
-
-static void test_gc_mark() {
-
-}
-
-static void test_gc_sweep() {
-
 }
 
 int main() {
@@ -116,13 +67,5 @@ int main() {
     test(stack_pop);
 
     suite("gc");
-    test(gc_new);
-    test(gc_mark);
-    test(gc_sweep);
-    test(new_gc_object);
-    test(new_gc_liveset);
-
-    suite("gc liveset");
-    test(liveset_gc_iterator);
-    test(liveset_gc_append);
+    test(new_gc);
 }
