@@ -19,6 +19,7 @@ gc_node_new(value_t* val) {
     gc_node_t* self = malloc(sizeof(gc_node_t));
     self->value = val;
     self->next = NULL;
+    self->prev = NULL;
     return self;
 }
 
@@ -61,8 +62,50 @@ gc_list_append(gc_list_t* self, value_t* value) {
     self->size++;
 }
 
+void 
+gc_mark_value(gc_t* self, value_t* value) {
+    value->marked = 1;
+
+    // Vectors are the only object type that has references.
+    if (value->type == VEC) {
+        for (int k = 0; k < 2; k++) {
+            gc_mark_value(self, value->vec_value[k]);
+        }
+    }
+}
+
+// Algorithm:
+//  - Go through each root
+//  - Iteratively find each reference and mark each value.
+//
 void
 gc_mark(gc_t* self) {
+    // Loop through each roots
+    for (int i = 0 ; i < self->roots_size; i++) {
+        gc_mark_value(self, self->roots[i]);
+    }
+}
+
+// Algorithm:
+//  - Go through each object and free unmarked objects.
+//  - Go through each, again, and unmark them.
+void
+gc_sweep(gc_t* self) {
+
+    if (self->objects->first) {
+        gc_node_t* current = self->objects->first;
+
+        for (int i = 0; i < self->objects->size; i++) {
+            // Unreachable:
+            if (!current->value->marked) {
+                gc_node_t* next = current->next;
+                current->prev->next = current->next;
+                current->next->prev = current->prev;
+                free(current);
+                current = next;
+            }
+        }
+    }
 
 }
 

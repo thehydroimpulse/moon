@@ -86,6 +86,19 @@ static void test_register_roots() {
     gc_free(gc);
 }
 
+static void test_mark_phase() {
+    vm_t* vm = vm_new();
+
+    value_t* a = int_new(11);
+
+    gc_register_roots((gc_t*) vm->gc, a);
+    gc_list_append(((gc_t*)vm->gc)->objects, a);
+
+    assert(a->marked == 0);
+
+    gc_mark((gc_t*)vm->gc);
+}
+
 int main() {
     suite("vm");
     test(vm_new);
@@ -101,6 +114,7 @@ int main() {
     suite("gc");
     test(new_gc);
     test(register_roots);
+    test(mark_phase);
 
     suite("gc node");
     test(new_gc_node);

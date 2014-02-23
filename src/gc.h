@@ -7,6 +7,7 @@
 
 typedef struct gc_node {
     struct gc_node* next;
+    struct gc_node* prev;
     value_t* value;
 } gc_node_t;
 
@@ -31,7 +32,9 @@ gc_list_t* gc_list_new();
 void gc_list_free(gc_list_t*);
 void gc_list_append(gc_list_t*,value_t*);
 
+void gc_mark_value(gc_t*, value_t*);
 void gc_mark(gc_t*);
+void gc_sweep(gc_t*);
 
 void gc_register_roots(gc_t*, value_t*);
 
