@@ -106,7 +106,16 @@ gc_sweep(gc_t* self, gc_node_t* node) {
 
     // Unreachable:
     if (!node->value->marked) {
-        printf("Unreachable");
+        printf("[gc] freeing memory. (type: %i)\n", node->value->type);
+        gc_node_t* next = node->next;
+        gc_node_t* prev = node->prev;
+        value_free(node->value);
+        gc_node_free(node);
+
+        next->prev = prev;
+        if (prev != NULL) {
+            prev->next = next;
+        }
     }
 
     gc_sweep(self, node->next);
