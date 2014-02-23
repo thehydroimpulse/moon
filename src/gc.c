@@ -6,6 +6,7 @@
 gc_t* gc_new() {
     gc_t* gc = malloc(sizeof(gc_t));
     gc->roots_size = 0;
+    gc->objects = gc_list_new();
     return gc;
 }
 
@@ -58,4 +59,18 @@ gc_list_append(gc_list_t* self, value_t* value) {
     }
 
     self->size++;
+}
+
+void
+gc_mark(gc_t* self) {
+
+}
+
+void
+gc_register_roots(gc_t* self, value_t* value) {
+    if (self->roots_size == MAX_STACK_SIZE) {
+        return;
+    }
+
+    self->roots[self->roots_size++] = value;
 }

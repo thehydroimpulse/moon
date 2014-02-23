@@ -76,6 +76,16 @@ static void test_new_gc_list() {
     assert(list->size == 3);
 }
 
+static void test_register_roots() {
+    gc_t* gc = gc_new();
+    assert(gc->roots_size == 0);
+    value_t* a = int_new(11);
+    gc_register_roots(gc, a);
+    assert(gc->roots_size == 1);
+
+    gc_free(gc);
+}
+
 int main() {
     suite("vm");
     test(vm_new);
@@ -90,6 +100,7 @@ int main() {
 
     suite("gc");
     test(new_gc);
+    test(register_roots);
 
     suite("gc node");
     test(new_gc_node);
