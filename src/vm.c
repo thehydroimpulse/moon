@@ -3,7 +3,7 @@
 #include <memory.h>
 
 #include "vm.h"
-
+#include "gc.h"
 
 vm_t* 
 new_vm() {

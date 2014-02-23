@@ -4,7 +4,7 @@ project(gc)
 add_definitions(-std=c99)
 add_executable(gc src/main.c ${SOURCES})
 
-set (SOURCES src/vm.c)
+set (SOURCES src/vm.c src/gc.c)
 
 include_directories(.)
 

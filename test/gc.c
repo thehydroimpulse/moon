@@ -35,14 +35,42 @@ static void test_stack_push() {
     free_vm(vm);
 }
 
+static void test_stack_pop() {
+    value_t* a = new_int(10);
+    vm_t* vm = new_vm();
+    push_stack(vm, a);
+
+    assert(pop_stack(vm) == a);
+
+    free_vm(vm);
+}
+
+static void test_gc_new() {
+
+}
+
+static void test_gc_mark() {
+
+}
+
+static void test_gc_sweep() {
+
+}
+
 int main() {
     suite("vm");
     test(vm_new);
 
-    suite("values");
+    suite("rvalues");
     test(val_int_new);
     test(val_vec_new);
 
-    suite("test");
+    suite("stack");
     test(stack_push);
+    test(stack_pop);
+
+    suite("gc");
+    test(gc_new);
+    test(gc_mark);
+    test(gc_sweep);
 }
