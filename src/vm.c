@@ -17,10 +17,9 @@ free_vm(vm_t* self) {
 
     // Clear the stack.
     if (self->stack_size > 0) {
-        for (int i = 0; i < MAX_STACK_SIZE; i++) {
-            if (self->stack[i] != NULL) {
-                free_value(self->stack[i]);
-            }
+        // We only need to free allocated slots.
+        for (int i = 0; i < self->stack_size; i++) {
+            free_value(self->stack[i]);
         }
     }
 

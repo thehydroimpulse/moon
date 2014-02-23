@@ -30,7 +30,11 @@ struct value {
 };
 
 struct vm {
+    // The vm stack contains all the local variables. These are
+    // akin to roots in the GC.
     struct value* stack[MAX_STACK_SIZE];
+
+    // Keep track of how many objects are within the stack.
     int stack_size;
 };
 
