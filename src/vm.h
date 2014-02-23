@@ -17,10 +17,6 @@ enum type_t {
     VEC
 };
 
-struct vec {
-
-};
-
 // A value that can be of any type. We'll use C's unions to allow
 // us to represent multiple different types.
 struct value {
@@ -28,7 +24,8 @@ struct value {
     enum type_t type;
 
     union {
-        int int_type;
+        int int_value;
+        struct value* vec_value[2]; // Limit the size to two.
     };
 };
 
@@ -41,7 +38,15 @@ typedef struct vm vm_t;
 typedef struct value value_t;
 typedef struct vec vec_t;
 
+// VM
 vm_t* new_vm();
 void free_vm(vm_t*);
+
+// Value (int)
+value_t* new_int(int);
+
+// Value (vec)
+value_t* new_vec(value_t*, value_t*);
+void free_value(value_t*);
 
 #endif

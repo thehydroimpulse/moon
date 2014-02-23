@@ -15,3 +15,27 @@ void
 free_vm(vm_t* self) {
     free(self);
 }
+
+
+value_t*
+new_int(int a) {
+    value_t* self = malloc(sizeof(value_t));
+    self->type = INT;
+    self->int_value = a;
+    return self;
+}
+
+
+void
+free_value(value_t* self) {
+    if (self->type == VEC) {
+        for (int i = 0; i < 2; i++) {
+            if (self->vec_value[i] != NULL) {
+                free_value(self->vec_value[i]);
+                self->vec_value[i] = NULL;
+            }
+        }
+    }
+
+    free(self);
+}
