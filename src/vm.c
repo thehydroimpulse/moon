@@ -25,6 +25,22 @@ new_int(int a) {
     return self;
 }
 
+value_t* 
+new_vec(value_t* a, value_t* b) {
+    value_t* self = malloc(sizeof(value_t));
+    self->type = VEC;
+
+    if (a != NULL) {
+        self->vec_value[0] = a;
+    }
+
+    if (b != NULL) {
+        self->vec_value[1] = b;
+    }
+
+    return self;
+}
+
 
 void
 free_value(value_t* self) {
