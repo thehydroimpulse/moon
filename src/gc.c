@@ -71,7 +71,15 @@ append_gc_liveset(gc_liveset_t* self, gc_object_t* object) {
         self->first = object;
         self->size  = 1;
     } else {
+        gc_liveset_iter_t* iter = new_gc_liveset_iterator(self);
+        gc_object_t* obj = NULL;
+        while((obj = next_gc_liveset_iterator(iter)) != NULL) {}
+        if (obj != NULL) {
+            obj->next = object;
+            self->size++;
+        }
 
+        free_gc_liveset_iterator(iter);
     }
 }
 

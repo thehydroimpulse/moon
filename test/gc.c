@@ -72,6 +72,17 @@ static void test_liveset_gc_iterator() {
     // Create a new gc_liveset iterator
     gc_liveset_iter_t* iter = new_gc_liveset_iterator(set);
     assert(next_gc_liveset_iterator(iter) == obj);
+
+    free_gc_liveset_iterator(iter);
+    free_gc_liveset(set);
+}
+
+static void test_liveset_gc_append() {
+    value_t* a = new_int(55);
+    gc_object_t* obj = new_gc_object(a);
+    gc_liveset_t* set = new_gc_liveset();
+    append_gc_liveset(set, obj);
+    assert(set->size == 1);
 }
 
 static void test_new_gc_object() {
@@ -113,4 +124,5 @@ int main() {
 
     suite("gc liveset");
     test(liveset_gc_iterator);
+    test(liveset_gc_append);
 }
