@@ -28,3 +28,4 @@ install_manifest.txt
 testgc
 gc
 Testing
+CTestTestfile.cmake
