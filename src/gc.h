@@ -16,7 +16,7 @@ typedef struct gc_list {
     int size;
 } gc_list_t;
 
-typedef struct {
+typedef struct gc {
     value_t* roots[MAX_STACK_SIZE];
     int roots_size;
     gc_list_t* objects;

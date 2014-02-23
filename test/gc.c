@@ -91,12 +91,14 @@ static void test_mark_phase() {
 
     value_t* a = int_new(11);
 
-    gc_register_roots((gc_t*) vm->gc, a);
-    gc_list_append(((gc_t*)vm->gc)->objects, a);
+    assert(vm->gc->roots_size == 0);
+
+    gc_register_roots(vm->gc, a);
+    //gc_list_append(((gc_t*)vm->gc)->objects, a);
 
     assert(a->marked == 0);
 
-    gc_mark((gc_t*)vm->gc);
+    //gc_mark((gc_t*)vm->gc);
 }
 
 int main() {

@@ -9,7 +9,7 @@ vm_t*
 vm_new() {
     vm_t* self = malloc(sizeof(vm_t));
     self->stack_size = 0;
-    //self->gc = new_gc();
+    self->gc = gc_new();
     return self;
 }
 
