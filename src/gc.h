@@ -34,7 +34,7 @@ void gc_list_append(gc_list_t*,value_t*);
 
 void gc_mark_value(gc_t*, value_t*);
 void gc_mark(gc_t*);
-void gc_sweep(gc_t*);
+void gc_sweep(gc_t*, gc_node_t*);
 
 void gc_register_roots(gc_t*, value_t*);
 

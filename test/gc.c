@@ -103,6 +103,55 @@ static void test_mark_phase() {
     assert(a->marked == 1);
 }
 
+static void test_sweep_phase() {
+    vm_t* vm = vm_new();
+
+    value_t* a = int_new(88);
+
+    assert(vm->gc->roots_size == 0);
+
+    gc_register_roots(vm->gc, a);
+    gc_list_append(vm->gc->objects, a);
+
+    assert(a->marked == 0);
+
+    gc_mark(vm->gc);
+
+    assert(a->marked == 1);
+
+    gc_sweep(vm->gc, vm->gc->objects->first);
+
+    assert(a != NULL);
+    assert(a->int_value == 88);
+}
+
+static void test_sweep_phase_complex() {
+    vm_t* vm = vm_new();
+
+    value_t* a = int_new(33);
+    value_t* b = int_new(22);
+    value_t* c = vec_new(a, b);
+
+    assert(vm->gc->roots_size == 0);
+
+    //gc_register_roots(vm->gc, a);
+    gc_list_append(vm->gc->objects, a);
+
+    //gc_register_roots(vm->gc, b);
+    gc_list_append(vm->gc->objects, b);
+
+    gc_register_roots(vm->gc, c);
+    gc_list_append(vm->gc->objects, c);
+
+    assert(vm->gc->objects->size == 3);
+
+    c->vec_value[0] = NULL;
+    c->vec_value[0] = NULL;
+
+    gc_mark(vm->gc);
+    gc_sweep(vm->gc, vm->gc->objects->first);
+}
+
 int main() {
     suite("vm");
     test(vm_new);
@@ -119,6 +168,8 @@ int main() {
     test(new_gc);
     test(register_roots);
     test(mark_phase);
+    test(sweep_phase);
+    test(sweep_phase_complex);
 
     suite("gc node");
     test(new_gc_node);

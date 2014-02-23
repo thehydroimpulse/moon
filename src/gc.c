@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "gc.h"
+#include "value.h"
 
 
 gc_t* gc_new() {
@@ -48,14 +49,11 @@ gc_list_append(gc_list_t* self, value_t* value) {
     gc_node_t* n = gc_node_new(value);
 
     if (self->first) {
-        gc_node_t* node = NULL;
-        for (int i = 0; i < self->size; i++) {
-            if (!node) {
-                node = self->first;
-            } else if (node->next != NULL) {
-                node = node->next;
-            }
-        }
+        gc_node_t* node = self->first;
+        while (node->next != NULL && (node = node->next)) {}
+
+        n->prev = node;
+        node->next = n;
     } else {
         self->first = n;
     }
@@ -65,12 +63,20 @@ gc_list_append(gc_list_t* self, value_t* value) {
 
 void 
 gc_mark_value(gc_t* self, value_t* value) {
+    if (value->type == INT) {
+        printf("[marking value] type: int val: [%i]\n", value->int_value);
+    } else {
+        printf("[marking value] type: vec \n");
+    }
+
     value->marked = 1;
 
     // Vectors are the only object type that has references.
     if (value->type == VEC) {
         for (int k = 0; k < 2; k++) {
-            gc_mark_value(self, value->vec_value[k]);
+            if (value->vec_value[k] != NULL) {
+                gc_mark_value(self, value->vec_value[k]);
+            }
         }
     }
 }
@@ -91,23 +97,19 @@ gc_mark(gc_t* self) {
 //  - Go through each object and free unmarked objects.
 //  - Go through each, again, and unmark them.
 void
-gc_sweep(gc_t* self) {
+gc_sweep(gc_t* self, gc_node_t* node) {
+    if (node == NULL) return;
 
-    if (self->objects->first) {
-        gc_node_t* current = self->objects->first;
-
-        for (int i = 0; i < self->objects->size; i++) {
-            // Unreachable:
-            if (!current->value->marked) {
-                gc_node_t* next = current->next;
-                current->prev->next = current->next;
-                current->next->prev = current->prev;
-                free(current);
-                current = next;
-            }
-        }
+    if (node->value->type == VEC) {
+        printf("[sweeping] vec\n");
     }
 
+    // Unreachable:
+    if (!node->value->marked) {
+        printf("Unreachable");
+    }
+
+    gc_sweep(self, node->next);
 }
 
 void
