@@ -41,6 +41,21 @@ gc_list_free(gc_list_t* self) {
 }
 
 void
-gc_list_append(gc_list_t* self,value_t* value) {
+gc_list_append(gc_list_t* self, value_t* value) {
+    gc_node_t* n = gc_node_new(value);
 
+    if (self->first) {
+        gc_node_t* node = NULL;
+        for (int i = 0; i < self->size; i++) {
+            if (!node) {
+                node = self->first;
+            } else if (node->next != NULL) {
+                node = node->next;
+            }
+        }
+    } else {
+        self->first = n;
+    }
+
+    self->size++;
 }

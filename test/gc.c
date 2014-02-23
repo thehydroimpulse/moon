@@ -68,9 +68,12 @@ static void test_new_gc_list() {
     value_t* c = int_new(33);
 
     gc_list_t* list = gc_list_new();
+    
     gc_list_append(list,a);
     gc_list_append(list,b);
     gc_list_append(list,c);
+
+    assert(list->size == 3);
 }
 
 int main() {
@@ -90,4 +93,7 @@ int main() {
 
     suite("gc node");
     test(new_gc_node);
+
+    suite("gc list");
+    test(new_gc_list);
 }
