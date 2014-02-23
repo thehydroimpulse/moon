@@ -134,14 +134,10 @@ static void test_sweep_phase_complex() {
 
     assert(vm->gc->roots_size == 0);
 
-    //gc_register_roots(vm->gc, a);
     gc_list_append(vm->gc->objects, a);
-
-    //gc_register_roots(vm->gc, b);
     gc_list_append(vm->gc->objects, b);
 
-    gc_register_roots(vm->gc, c);
-    gc_list_append(vm->gc->objects, c);
+    SVALUE(vm, c)
 
     assert(vm->gc->objects->size == 3);
 
