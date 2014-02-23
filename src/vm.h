@@ -30,7 +30,8 @@ struct value {
 };
 
 struct vm {
-
+    struct value* stack[MAX_STACK_SIZE];
+    int stack_size;
 };
 
 
@@ -41,6 +42,9 @@ typedef struct vec vec_t;
 // VM
 vm_t* new_vm();
 void free_vm(vm_t*);
+
+void push_stack(vm_t*, value_t*);
+value_t* pop_stack(vm_t*);
 
 // Value (int)
 value_t* new_int(int);
