@@ -5,7 +5,13 @@
 #include "vm.h"
 
 
-vm_t* new_vm() {
+vm_t* 
+new_vm() {
     vm_t* self = malloc(sizeof(vm_t));
     return self;
+}
+
+void 
+free_vm(vm_t* self) {
+    free(self);
 }
