@@ -13,6 +13,7 @@ gc_t* gc_new() {
 }
 
 void gc_free(gc_t* self) {
+    gc_list_free(self->objects);
     free(self);
 }
 
@@ -41,6 +42,15 @@ gc_list_new() {
 
 void
 gc_list_free(gc_list_t* self) {
+    if (self->first) {
+        gc_node_t* node = self->first;
+        do {
+            if (node == NULL) break;
+            gc_node_t* n = node;
+            node = node->next;
+            free(n);
+        } while(node != NULL);
+    }
     free(self);
 }
 
@@ -89,7 +99,13 @@ void
 gc_mark(gc_t* self) {
     // Loop through each roots
     for (int i = 0 ; i < self->roots_size; i++) {
-        gc_mark_value(self, self->roots[i]);
+        if (self->roots[i]->type == VEC) {
+            for (int k = 0; k < 2; k++) {
+                if (self->roots[i]->vec_value[k] != NULL) {
+                    gc_mark_value(self, self->roots[i]->vec_value[k]);
+                }
+            }
+        }
     }
 }
 
@@ -128,4 +144,27 @@ gc_register_roots(gc_t* self, value_t* value) {
     }
 
     self->roots[self->roots_size++] = value;
+}
+
+//
+//  1(0) 1(1) N(2) 1(3)
+//  1(0) 1(1) 1(3) 
+void
+gc_unregister_roots(gc_t* self, value_t* value) {
+    for (int i = 0; i < self->roots_size; i++) {
+        if (self->roots[i] == value) {
+
+            self->roots[i] = NULL;
+            self->roots_size--;
+
+            for (int k = 0; k < MAX_STACK_SIZE; k++) {
+                if (!self->roots[k]) {
+                    self->roots[k] = self->roots[k+1];
+                    k++;
+                } else {
+                    self->roots[k] = self->roots[k];
+                }
+            }
+        }
+    }
 }

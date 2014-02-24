@@ -24,6 +24,7 @@ vm_free(vm_t* self) {
         }
     }
 
+    gc_free(self->gc);
     free(self);
 }
 
@@ -35,6 +36,7 @@ push_stack(vm_t* self, value_t* val) {
         exit(-1);
     }
 
+    gc_register_roots(self->gc, val);
     self->stack[self->stack_size++] = val;
 }
 
@@ -46,7 +48,9 @@ pop_stack(vm_t* self) {
         return NULL;
     }
 
+
     value_t* val = self->stack[self->stack_size - 1];
+    gc_unregister_roots(self->gc, val);
     self->stack[self->stack_size - 1] = NULL;
     self->stack_size -= 1;
 

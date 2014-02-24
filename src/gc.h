@@ -37,6 +37,7 @@ void gc_mark(gc_t*);
 void gc_sweep(gc_t*, gc_node_t*);
 
 void gc_register_roots(gc_t*, value_t*);
+void gc_unregister_roots(gc_t*, value_t*);
 
 #define SVALUE(VM,val) \
     gc_register_roots(VM->gc,val); \
