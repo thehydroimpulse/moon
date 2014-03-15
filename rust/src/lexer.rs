@@ -1,11 +1,12 @@
 use std::str::Chars;
+use std::iter::Peekable;
 
 /// Lexer
 pub struct Lexer<'a> {
   line: int,
   column: int,
   pos: int,
-  iter: Chars<'a>,
+  iter: Peekable<char, Chars<'a>>,
   curr_ch: Option<char>,
   done: bool
 }
@@ -23,7 +24,7 @@ pub enum Token {
 
 impl<'a> Lexer<'a> {
   pub fn new(input: &'a str) -> Lexer<'a> {
-    let it = input.chars();
+    let it = input.chars().peekable();
     Lexer {
       line: 0,
       column: 0,
@@ -37,6 +38,12 @@ impl<'a> Lexer<'a> {
   pub fn bump(&mut self) {
     self.curr_ch = self.iter.next();
   }
+
+  pub fn nextch_is(&mut self, ch: char) -> bool {
+    self.bump();
+    self.curr_ch.unwrap() == ch
+  }
+
 }
 
 
@@ -51,6 +58,10 @@ mod test {
     assert_eq!(lex.curr_ch.unwrap(), 'H');
   }
 
-  
-  
+  #[test]
+  fn nextch() {
+    let mut lex = Lexer::new(&"Woot");
+    assert!(lex.nextch_is('W'));
+  }
+
 }
