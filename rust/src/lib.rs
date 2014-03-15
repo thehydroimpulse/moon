@@ -2,3 +2,4 @@
 
 mod vm;
 mod gc;
+mod lexer;
