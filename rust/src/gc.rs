@@ -37,10 +37,15 @@ mod test {
   #[test]
   fn should_add_root() {
     let val = Int(55);
+    let ptr = Rc::new(val);
+    let ptr2 = ptr.clone();
     let mut gc = Gc::new();
-    gc.register_root(Rc::new(val));
+
+    // Register a new GC root.
+    gc.register_root(ptr);
 
     assert_eq!(gc.roots.len(), 1);
+    assert_eq!(*gc.roots[0], *ptr2);
   }
 
 }
