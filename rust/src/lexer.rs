@@ -337,4 +337,12 @@ mod test {
         assert_eq!(lex.next_token().unwrap().value, ~"let");
         assert_eq!(lex.next_token().unwrap().value, ~")");
     }
+
+    #[test]
+    fn should_test_iden_patterns() {
+        let mut lex = Lexer::new(&"(\n*true*\n)");
+        assert_eq!(lex.next_token().unwrap().value, ~"(");
+        assert_eq!(lex.next_token().unwrap().value, ~"*true*");
+        assert_eq!(lex.next_token().unwrap().value, ~")");
+    }
 }
