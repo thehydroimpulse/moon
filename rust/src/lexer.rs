@@ -1,7 +1,7 @@
 use std::str::Chars;
-use std::iter::Peekable;
 use std::fmt::{Show,Formatter};
 use std::fmt;
+use std::cast::transmute;
 
 pub struct TokenValue<'a> {
   token: Token,
@@ -13,7 +13,7 @@ pub struct Lexer<'a> {
   line: int,
   column: int,
   pos: int,
-  iter: Peekable<char, Chars<'a>>,
+  iter: Chars<'a>,
   curr_ch: Option<char>,
   done: bool
 }
@@ -69,9 +69,92 @@ impl Show for Token {
   }
 }
 
+pub fn verify_iden_start(ch: char) -> bool {
+
+  match ch {
+    'A' => true,
+    'a' => true,
+    'B' => true,
+    'b' => true,
+    'C' => true,
+    'c' => true,
+    'D' => true,
+    'd' => true,
+    'E' => true,
+    'e' => true,
+    'F' => true,
+    'f' => true,
+    'G' => true,
+    'g' => true,
+    'H' => true,
+    'h' => true,
+    'I' => true,
+    'i' => true,
+    'J' => true,
+    'j' => true,
+    'K' => true,
+    'k' => true,
+    'L' => true,
+    'l' => true,
+    'M' => true,
+    'm' => true,
+    'N' => true,
+    'n' => true,
+    'O' => true,
+    'o' => true,
+    'P' => true,
+    'p' => true,
+    'Q' => true,
+    'q' => true,
+    'R' => true,
+    'r' => true,
+    'S' => true,
+    's' => true,
+    'T' => true,
+    't' => true,
+    'U' => true,
+    'u' => true,
+    'V' => true,
+    'v' => true,
+    'W' => true,
+    'w' => true,
+    'Y' => true,
+    'y' => true,
+    'Z' => true,
+    'z' => true,
+    '+' => true,
+    '-' => true,
+    '*' => true,
+    _ => false 
+  }
+}
+
+// An iden is identified by:
+// /^([A-Za-z-+*^][A-Za-z0-9-_]*)$/
+pub fn is_iden<'b>(ch: &'b str) -> bool {
+  // Create a new iterator
+  let mut iter = ch.chars().peekable();
+
+  // Verify the first character.
+  if !verify_iden_start(iter.next().unwrap()) {
+    return false;
+  }
+
+  for x in iter {
+    match x {
+      '\n' => return false,
+      '\r' => return false,
+      ' ' => return false,
+      _  =>  if !verify_iden_start(x) { return false }
+    }
+  }
+
+  true
+}
+
 impl<'a> Lexer<'a> {
   pub fn new(input: &'a str) -> Lexer<'a> {
-    let it = input.chars().peekable();
+    let it = input.chars();
     Lexer {
       line: 0,
       column: 0,
@@ -89,10 +172,6 @@ impl<'a> Lexer<'a> {
   pub fn nextch_is(&mut self, ch: char) -> bool {
     self.bump();
     self.curr_ch.unwrap() == ch
-  }
-
-  pub fn peekch_is(&mut self, ch: char) -> bool {
-    *self.iter.peek().unwrap() == ch
   }
 
   pub fn next_token(&mut self) -> Option<TokenValue<'a>> {
@@ -114,7 +193,35 @@ impl<'a> Lexer<'a> {
         '2' => return Some(TokenValue::new(INTEGER, &"2")),
         '1' => return Some(TokenValue::new(INTEGER, &"1")),
         '0' => return Some(TokenValue::new(INTEGER, &"0")),
-        _ => return None
+        _ => {
+          println!("--");
+          let mut it = self.iter;
+
+          // Try and parse an identifier
+          let mut iden = ~"";
+          let mut prev = ~"";
+          iden.push_char(c);
+
+          for a in it {
+            // FIXME(TheHydroImpulse): A huge fucking hack.
+            if !is_iden(iden) && is_iden(prev) {
+              return Some(TokenValue::new(IDEN, unsafe {
+                transmute(prev.as_slice())
+              }));
+            }
+
+            prev = iden.clone();
+            iden.push_char(a);
+            println!("iden = {}, is_iden(iden) = {}, prev = {}, ch = {}", 
+                iden, is_iden(iden), prev, a);
+          }
+
+          if !is_iden(iden) && is_iden(prev) {
+            return Some(TokenValue::new(IDEN, unsafe {
+              transmute(prev.as_slice())
+            }));
+          }
+        }
       }
     }
 
@@ -144,13 +251,6 @@ mod test {
   }
 
   #[test]
-  fn peekable() {
-    let mut lex = Lexer::new(&"Haha");
-    lex.bump();
-    assert!(lex.peekch_is('a'));
-  }
-
-  #[test]
   fn next_token() {
     // Should spit out two tokens (LPAREN,RPAREN)
     let mut lex = Lexer::new(&"()");
@@ -171,6 +271,14 @@ mod test {
     assert!(lex.next_token().unwrap().value == &"8");
     assert!(lex.next_token().unwrap().value == &"3");
     assert!(lex.next_token().unwrap().value == &"0");
+  }
+
+  #[test]
+  fn should_tokenize_identifier() {
+    let mut lex = Lexer::new(&"(let)");
+    println!("1");
+    assert_eq!(lex.next_token().unwrap().value, &"(");
+    assert_eq!(lex.next_token().unwrap().value, &"let");
   }
 
 }
