@@ -1,7 +1,7 @@
-use std::str::Chars;
 use std::fmt::{Show,Formatter};
 use std::fmt;
 use std::cast::transmute;
+use std::str::CharRange;
 
 pub struct TokenValue {
     token: Token,
@@ -17,6 +17,57 @@ impl TokenValue {
     }
 }
 
+struct LexerIterator<'a> {
+    string: &'a str,
+    pos: uint,
+    line: uint,
+    next: uint,
+    current: Option<char>,
+    peek: Option<char>,
+    previous: Option<char>
+}
+
+impl<'a> LexerIterator<'a> {
+    pub fn new(string: &'a str) -> LexerIterator<'a> {
+        LexerIterator {
+            string: string,
+            pos: 0,
+            next: 0,
+            line: 1,
+            current: None,
+            peek: None,
+            previous: None
+        }
+    }
+
+    pub fn next(&mut self) -> Option<char> {
+        if self.string.len() != 0 && self.pos < self.string.len() {
+            let CharRange {ch, next} = self.string.char_range_at(self.pos);
+            self.pos = next;
+
+            if self.current.is_some() {
+                self.previous = self.current;
+            }
+
+            self.current = Some(ch);
+            Some(ch)
+        } else {
+            None
+        }
+    }
+
+    pub fn peek(&mut self) -> Option<char> {
+        if self.string.len() != 0 && self.pos < self.string.len() {
+            let CharRange {ch, next} = self.string.char_range_at(self.pos);
+            self.peek = Some(ch);
+            Some(ch)
+        } else {
+            None
+        }
+    }
+
+}
+
 /// Lexer tokens.
 pub enum Token {
     PLUS,
@@ -30,67 +81,78 @@ pub enum Token {
 
 /// Lexer
 pub struct Lexer<'a> {
-    iter: Chars<'a>,
+    iter: *mut LexerIterator<'a>,
     done: bool
 }
 
 impl<'a> Lexer<'a> {
     pub fn new(input: &'a str) -> Lexer<'a> {
-        let it = input.chars();
         Lexer {
-            iter: it,
+            iter: unsafe { transmute(~LexerIterator::new(input)) },
             done: false
         }
     }
 
     pub fn next_token(&mut self) -> Option<TokenValue> {
-        for c in self.iter {
-            match c {
-                ' ' => continue,
-                '\r' => continue,
-                '\n' => continue,
-                '(' => return Some(TokenValue::new(LPAREN, ~"(")),
-                ')' => return Some(TokenValue::new(RPAREN, ~")")),
-                '+' => return Some(TokenValue::new(PLUS, ~"+")),
-                '-' => return Some(TokenValue::new(MINUS, ~"-")),
-                ':' => return Some(TokenValue::new(COLON, ~":")),
-                '9' => return Some(TokenValue::new(INTEGER, ~"9")),
-                '8' => return Some(TokenValue::new(INTEGER, ~"8")),
-                '7' => return Some(TokenValue::new(INTEGER, ~"7")),
-                '6' => return Some(TokenValue::new(INTEGER, ~"6")),
-                '5' => return Some(TokenValue::new(INTEGER, ~"5")),
-                '4' => return Some(TokenValue::new(INTEGER, ~"4")),
-                '3' => return Some(TokenValue::new(INTEGER, ~"3")),
-                '2' => return Some(TokenValue::new(INTEGER, ~"2")),
-                '1' => return Some(TokenValue::new(INTEGER, ~"1")),
-                '0' => return Some(TokenValue::new(INTEGER, ~"0")),
-                _ => {
+        unsafe {
+            for c in *self.iter {
+                println!("{}", c);
+                match c {
+                    ' ' => continue,
+                    '\r' => continue,
+                    '\n' => continue,
+                    '(' => return Some(TokenValue::new(LPAREN, ~"(")),
+                    ')' => return Some(TokenValue::new(RPAREN, ~")")),
+                    '+' => return Some(TokenValue::new(PLUS, ~"+")),
+                    '-' => return Some(TokenValue::new(MINUS, ~"-")),
+                    ':' => return Some(TokenValue::new(COLON, ~":")),
+                    '9' => return Some(TokenValue::new(INTEGER, ~"9")),
+                    '8' => return Some(TokenValue::new(INTEGER, ~"8")),
+                    '7' => return Some(TokenValue::new(INTEGER, ~"7")),
+                    '6' => return Some(TokenValue::new(INTEGER, ~"6")),
+                    '5' => return Some(TokenValue::new(INTEGER, ~"5")),
+                    '4' => return Some(TokenValue::new(INTEGER, ~"4")),
+                    '3' => return Some(TokenValue::new(INTEGER, ~"3")),
+                    '2' => return Some(TokenValue::new(INTEGER, ~"2")),
+                    '1' => return Some(TokenValue::new(INTEGER, ~"1")),
+                    '0' => return Some(TokenValue::new(INTEGER, ~"0")),
+                    _ => {
 
-                    let mut it = self.iter;
-                    let mut current = ~"";
-                    let mut previous = ~"";
-                        
-                    // Push the current character
-                    current.push_char(c);
+                        let mut current = ~"";
+                        let mut previous = ~"";
+                            
+                        // Push the current character
+                        current.push_char(c);
 
-                    for character in it {
-                        // Lets save the current buffer as the previous.
-                        // This ensures that if this character makes the invalidation,
-                        // we can return the previously valid string.
-                        previous = current.clone();
+                        loop {
+                            // Try the next character. If we get a valid identifier
+                            // than we can move the position of the iterator.
+                            match (*self.iter).peek() {
+                                Some(character) => {
+                                    println!("{}", character);
+                                    // Lets save the current buffer as the previous.
+                                    // This ensures that if this character makes the invalidation,
+                                    // we can return the previously valid string.
+                                    previous = current.clone();
 
-                        // Push the new chracter onto the current buffer.
-                        current.push_char(character);
+                                    // Push the new chracter onto the current buffer.
+                                    current.push_char(character);
 
-                    //     // FIXME(TheHydroImpulse): A huge fucking hack.
+                                    if is_iden(current) {
+                                        (*self.iter).next();
+                                    }
+
+                                    if !is_iden(current) && is_iden(previous) {
+                                        return Some(TokenValue::new(IDEN, previous));
+                                    }
+                                },
+                                None => { break }
+                            }
+                        }
+
                         if !is_iden(current) && is_iden(previous) {
                             return Some(TokenValue::new(IDEN, previous));
-                    //      println!("ooo");
                         }
-                    }
-
-                    if !is_iden(current) && is_iden(previous) {
-                        return Some(TokenValue::new(IDEN, previous));
                     }
                 }
             }
@@ -246,8 +308,9 @@ mod test {
     #[test]
     fn should_tokenize_identifier() {
         let mut lex = Lexer::new(&"(let)");
-
+        println!("")
         assert_eq!(lex.next_token().unwrap().value, ~"(");
         assert_eq!(lex.next_token().unwrap().value, ~"let");
+        assert_eq!(lex.next_token().unwrap().value, ~")");
     }
 }
