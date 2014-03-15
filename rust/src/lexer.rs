@@ -155,6 +155,7 @@ mod test {
     // Should spit out two tokens (LPAREN,RPAREN)
     let mut lex = Lexer::new(&"()");
     assert!(lex.next_token().unwrap().value == &"("); //TokenValue::new(LPAREN, "("));
+    assert!(lex.next_token().unwrap().value == &")");  
   }
 
 }
