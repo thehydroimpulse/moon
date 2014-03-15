@@ -44,6 +44,10 @@ impl<'a> Lexer<'a> {
     self.curr_ch.unwrap() == ch
   }
 
+  pub fn peekch_is(&mut self, ch: char) -> bool {
+    *self.iter.peek().unwrap() == ch
+  }
+
 }
 
 
@@ -62,6 +66,13 @@ mod test {
   fn nextch() {
     let mut lex = Lexer::new(&"Woot");
     assert!(lex.nextch_is('W'));
+  }
+
+  #[test]
+  fn peekable() {
+    let mut lex = Lexer::new(&"Haha");
+    lex.bump();
+    assert!(lex.peekch_is('a'));
   }
 
 }

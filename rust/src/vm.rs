@@ -2,7 +2,6 @@ use gc::Gc;
 use std::fmt::{Show,Formatter};
 use std::fmt;
 use std::rc::{Rc};
-use std::cell::{RefCell};
 
 /// A generic value within our virtual machine. A value
 /// can be anything defined within this enum.
