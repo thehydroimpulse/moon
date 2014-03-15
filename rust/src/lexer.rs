@@ -96,7 +96,6 @@ impl<'a> Lexer<'a> {
     pub fn next_token(&mut self) -> Option<TokenValue> {
         unsafe {
             for c in *self.iter {
-                println!("{}", c);
                 match c {
                     ' ' => continue,
                     '\r' => continue,
@@ -129,7 +128,6 @@ impl<'a> Lexer<'a> {
                             // than we can move the position of the iterator.
                             match (*self.iter).peek() {
                                 Some(character) => {
-                                    println!("{}", character);
                                     // Lets save the current buffer as the previous.
                                     // This ensures that if this character makes the invalidation,
                                     // we can return the previously valid string.
@@ -308,9 +306,15 @@ mod test {
     #[test]
     fn should_tokenize_identifier() {
         let mut lex = Lexer::new(&"(let)");
-        println!("")
         assert_eq!(lex.next_token().unwrap().value, ~"(");
         assert_eq!(lex.next_token().unwrap().value, ~"let");
+        assert_eq!(lex.next_token().unwrap().value, ~")");
+    }
+
+    #[test]
+    fn should_forget_whitespace() {
+        let mut lex = Lexer::new(&"( )");
+        assert_eq!(lex.next_token().unwrap().value, ~"(");
         assert_eq!(lex.next_token().unwrap().value, ~")");
     }
 }
