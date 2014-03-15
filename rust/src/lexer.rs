@@ -99,7 +99,10 @@ impl<'a> Lexer<'a> {
                 match c {
                     ' ' => continue,
                     '\r' => continue,
-                    '\n' => continue,
+                    '\n' => {
+                        (*self.iter).line += 1;
+                        continue 
+                    },
                     '(' => return Some(TokenValue::new(LPAREN, ~"(")),
                     ')' => return Some(TokenValue::new(RPAREN, ~")")),
                     '+' => return Some(TokenValue::new(PLUS, ~"+")),
@@ -316,5 +319,14 @@ mod test {
         let mut lex = Lexer::new(&"( )");
         assert_eq!(lex.next_token().unwrap().value, ~"(");
         assert_eq!(lex.next_token().unwrap().value, ~")");
+    }
+
+    #[test]
+    fn should_count_lines() {
+        let mut lex = Lexer::new(&"(\n)");
+        assert_eq!(lex.next_token().unwrap().value, ~"(");
+        assert_eq!(lex.next_token().unwrap().value, ~")");
+
+        assert_eq!(unsafe { (*lex.iter).line }, 2);
     }
 }
