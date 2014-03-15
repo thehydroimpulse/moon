@@ -329,4 +329,12 @@ mod test {
 
         assert_eq!(unsafe { (*lex.iter).line }, 2);
     }
+
+    #[test]
+    fn should_identify_an_iden_across_lines() {
+        let mut lex = Lexer::new(&"(\nlet\n)");
+        assert_eq!(lex.next_token().unwrap().value, ~"(");
+        assert_eq!(lex.next_token().unwrap().value, ~"let");
+        assert_eq!(lex.next_token().unwrap().value, ~")");
+    }
 }
