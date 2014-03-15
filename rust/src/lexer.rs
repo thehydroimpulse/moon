@@ -3,24 +3,18 @@ use std::fmt::{Show,Formatter};
 use std::fmt;
 use std::cast::transmute;
 
-pub struct TokenValue<'a> {
+pub struct TokenValue {
     token: Token,
-    value: &'a str
+    value: ~str
 }
 
-impl<'a> TokenValue<'a> {
-    pub fn new(tok: Token, val: &'a str) -> TokenValue<'a> {
+impl TokenValue {
+    pub fn new(tok: Token, val: ~str) -> TokenValue {
         TokenValue {
             token: tok,
             value: val
         }
     }
-}
-
-/// Lexer
-pub struct Lexer<'a> {
-    iter: *mut Chars<'a>,
-    done: bool
 }
 
 /// Lexer tokens.
@@ -32,6 +26,77 @@ pub enum Token {
     LPAREN,
     RPAREN,
     COLON
+}
+
+/// Lexer
+pub struct Lexer<'a> {
+    iter: Chars<'a>,
+    done: bool
+}
+
+impl<'a> Lexer<'a> {
+    pub fn new(input: &'a str) -> Lexer<'a> {
+        let it = input.chars();
+        Lexer {
+            iter: it,
+            done: false
+        }
+    }
+
+    pub fn next_token(&mut self) -> Option<TokenValue> {
+        for c in self.iter {
+            match c {
+                ' ' => continue,
+                '\r' => continue,
+                '\n' => continue,
+                '(' => return Some(TokenValue::new(LPAREN, ~"(")),
+                ')' => return Some(TokenValue::new(RPAREN, ~")")),
+                '+' => return Some(TokenValue::new(PLUS, ~"+")),
+                '-' => return Some(TokenValue::new(MINUS, ~"-")),
+                ':' => return Some(TokenValue::new(COLON, ~":")),
+                '9' => return Some(TokenValue::new(INTEGER, ~"9")),
+                '8' => return Some(TokenValue::new(INTEGER, ~"8")),
+                '7' => return Some(TokenValue::new(INTEGER, ~"7")),
+                '6' => return Some(TokenValue::new(INTEGER, ~"6")),
+                '5' => return Some(TokenValue::new(INTEGER, ~"5")),
+                '4' => return Some(TokenValue::new(INTEGER, ~"4")),
+                '3' => return Some(TokenValue::new(INTEGER, ~"3")),
+                '2' => return Some(TokenValue::new(INTEGER, ~"2")),
+                '1' => return Some(TokenValue::new(INTEGER, ~"1")),
+                '0' => return Some(TokenValue::new(INTEGER, ~"0")),
+                _ => {
+
+                    let mut it = self.iter;
+                    let mut current = ~"";
+                    let mut previous = ~"";
+                        
+                    // Push the current character
+                    current.push_char(c);
+
+                    for character in it {
+                        // Lets save the current buffer as the previous.
+                        // This ensures that if this character makes the invalidation,
+                        // we can return the previously valid string.
+                        previous = current.clone();
+
+                        // Push the new chracter onto the current buffer.
+                        current.push_char(character);
+
+                    //     // FIXME(TheHydroImpulse): A huge fucking hack.
+                        if !is_iden(current) && is_iden(previous) {
+                            return Some(TokenValue::new(IDEN, previous));
+                    //      println!("ooo");
+                        }
+                    }
+
+                    if !is_iden(current) && is_iden(previous) {
+                        return Some(TokenValue::new(IDEN, previous));
+                    }
+                }
+            }
+        }
+        None
+    }
 }
 
 // An iden is identified by:
@@ -57,65 +122,6 @@ pub fn is_iden<'b>(ch: &'b str) -> bool {
     true
 }
 
-impl<'a> Lexer<'a> {
-    pub fn new(input: &'a str) -> Lexer<'a> {
-        let it = ~input.chars();
-        Lexer {
-            iter: unsafe { transmute(it) },
-            done: false
-        }
-    }
-
-    pub fn next_token(&mut self) -> Option<TokenValue<'a>> {
-        unsafe {
-            for c in *self.iter {
-                match c {
-                    '(' => return Some(TokenValue::new(LPAREN, &"(")),
-                    ')' => return Some(TokenValue::new(RPAREN, &")")),
-                    '+' => return Some(TokenValue::new(PLUS, &"+")),
-                    '-' => return Some(TokenValue::new(MINUS, &"-")),
-                    ':' => return Some(TokenValue::new(COLON, &":")),
-                    '9' => return Some(TokenValue::new(INTEGER, &"9")),
-                    '8' => return Some(TokenValue::new(INTEGER, &"8")),
-                    '7' => return Some(TokenValue::new(INTEGER, &"7")),
-                    '6' => return Some(TokenValue::new(INTEGER, &"6")),
-                    '5' => return Some(TokenValue::new(INTEGER, &"5")),
-                    '4' => return Some(TokenValue::new(INTEGER, &"4")),
-                    '3' => return Some(TokenValue::new(INTEGER, &"3")),
-                    '2' => return Some(TokenValue::new(INTEGER, &"2")),
-                    '1' => return Some(TokenValue::new(INTEGER, &"1")),
-                    '0' => return Some(TokenValue::new(INTEGER, &"0")),
-                    _ => {
-
-                        // Try and parse an identifier
-                        let mut iden = ~"";
-                        let mut prev = ~"";
-                        iden.push_char(c);
-
-                        for a in *self.iter {
-                            // FIXME(TheHydroImpulse): A huge fucking hack.
-                            if !is_iden(iden) && is_iden(prev) {
-                            return Some(TokenValue::new(IDEN, unsafe {
-                              transmute(prev.as_slice())
-                            }));
-                            }
-
-                            prev = iden.clone();
-                            iden.push_char(a);
-                        }
-
-                        if !is_iden(iden) && is_iden(prev) {
-                            return Some(TokenValue::new(IDEN, unsafe {
-                            transmute(prev.as_slice())
-                            }));
-                        }
-                    }
-                }
-            }
-        }
-        None
-    }
-}
 
 pub fn verify_iden_start(ch: char) -> bool {
     match ch {
@@ -218,30 +224,30 @@ mod test {
     fn next_token() {
         // Should spit out two tokens (LPAREN,RPAREN)
         let mut lex = Lexer::new(&"()");
-        assert!(lex.next_token().unwrap().value == &"(");
-        assert!(lex.next_token().unwrap().value == &")");  
+        assert!(lex.next_token().unwrap().value == ~"(");
+        assert!(lex.next_token().unwrap().value == ~")");  
     }
 
     #[test]
     fn return_complex_tokens() {
         let mut lex = Lexer::new(&"(+(():830");
 
-        assert!(lex.next_token().unwrap().value == &"(");
-        assert!(lex.next_token().unwrap().value == &"+");
-        assert!(lex.next_token().unwrap().value == &"(");
-        assert!(lex.next_token().unwrap().value == &"(");
-        assert!(lex.next_token().unwrap().value == &")");
-        assert!(lex.next_token().unwrap().value == &":");
-        assert!(lex.next_token().unwrap().value == &"8");
-        assert!(lex.next_token().unwrap().value == &"3");
-        assert!(lex.next_token().unwrap().value == &"0");
+        assert!(lex.next_token().unwrap().value == ~"(");
+        assert!(lex.next_token().unwrap().value == ~"+");
+        assert!(lex.next_token().unwrap().value == ~"(");
+        assert!(lex.next_token().unwrap().value == ~"(");
+        assert!(lex.next_token().unwrap().value == ~")");
+        assert!(lex.next_token().unwrap().value == ~":");
+        assert!(lex.next_token().unwrap().value == ~"8");
+        assert!(lex.next_token().unwrap().value == ~"3");
+        assert!(lex.next_token().unwrap().value == ~"0");
     }
 
     #[test]
     fn should_tokenize_identifier() {
         let mut lex = Lexer::new(&"(let)");
 
-        assert_eq!(lex.next_token().unwrap().value, &"(");
-        assert_eq!(lex.next_token().unwrap().value, &"let");
+        assert_eq!(lex.next_token().unwrap().value, ~"(");
+        assert_eq!(lex.next_token().unwrap().value, ~"let");
     }
 }
