@@ -1,6 +1,8 @@
 use gc::Gc;
 use std::fmt::{Show,Formatter};
 use std::fmt;
+use std::rc::{Rc};
+use std::cell::{RefCell};
 
 /// A generic value within our virtual machine. A value
 /// can be anything defined within this enum.
@@ -8,6 +10,34 @@ pub enum Value {
   Int(u32),
   Str(~str),
   Pair(~Value, ~Value)
+}
+
+/// A virtual machine that holds needed objects (gc, stack, etc...) and
+/// the current state. 
+pub struct Vm {
+  /// A global garbage collector.
+  gc: Gc,
+
+  /// Our small stack. For simplicity, we'll limit this to 
+  /// a static value.
+  stack: ~[Rc<Value>]
+}
+
+impl Vm {
+  pub fn new() -> Vm {
+    Vm {
+      gc: Gc::new(),
+      stack: ~[]
+    }
+  }
+
+  pub fn push(&mut self, val: Value) {
+    self.stack.push(Rc::new(val));
+  }
+
+  pub fn pop(&mut self) -> Option<Value> {
+    Some((*self.stack.pop().unwrap()).clone())
+  }
 }
 
 impl Eq for Value {
@@ -30,6 +60,16 @@ impl Eq for Value {
   }
 }
 
+impl Clone for Value {
+  fn clone(&self) -> Value {
+    match *self {
+      Int(i) => Int(i),
+      Str(ref s) => Str(s.clone()),
+      _ => fail!("Not implemented.")
+    }
+  }
+}
+
 impl Show for Value {
   fn fmt(&self, f: &mut Formatter) -> fmt::Result {
     match *self {
@@ -37,34 +77,6 @@ impl Show for Value {
       Str(ref s) => write!(f.buf, "({})", s),
       _ => write!(f.buf, "({})", *self )
     }
-  }
-}
-
-/// A virtual machine that holds needed objects (gc, stack, etc...) and
-/// the current state. 
-pub struct Vm {
-  /// A global garbage collector.
-  gc: Gc,
-
-  /// Our small stack. For simplicity, we'll limit this to 
-  /// a static value.
-  stack: ~[Value]
-}
-
-impl Vm {
-  pub fn new() -> Vm {
-    Vm {
-      gc: Gc::new(),
-      stack: ~[]
-    }
-  }
-
-  pub fn push(&mut self, val: Value) {
-    self.stack.push(val);
-  }
-
-  pub fn pop(&mut self) -> Option<Value> {
-    self.stack.pop()
   }
 }
 
@@ -85,7 +97,7 @@ mod test {
     let val = Str(~"Hello World");
     vm.push(val);
     assert_eq!(vm.stack.len(), 1);
-    assert_eq!(vm.stack[0], Str(~"Hello World"));
+    assert_eq!(*vm.stack[0], Str(~"Hello World"));
   }
 
 }

@@ -13,6 +13,10 @@ impl Gc {
       roots: ~[]
     }
   }
+
+  pub fn register_root(val: Value) {
+
+  }
 }
 
 
