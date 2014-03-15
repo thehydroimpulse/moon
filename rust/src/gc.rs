@@ -14,3 +14,16 @@ impl Gc {
     }
   }
 }
+
+
+#[cfg(test)]
+mod test {
+  use super::Gc;
+
+  #[test]
+  fn should_have_empty_roots() {
+    let gc = Gc::new();
+    assert_eq!(gc.roots.len(), 0);
+  }
+
+}

@@ -48,28 +48,22 @@ pub struct Vm {
 
   /// Our small stack. For simplicity, we'll limit this to 
   /// a static value.
-  stack: ~[Value],
-
-  /// Stack Size
-  stack_size: u64
+  stack: ~[Value]
 }
 
 impl Vm {
   pub fn new() -> Vm {
     Vm {
       gc: Gc::new(),
-      stack: ~[],
-      stack_size: 0
+      stack: ~[]
     }
   }
 
   pub fn push(&mut self, val: Value) {
     self.stack.push(val);
-    self.stack_size += 1;
   }
 
   pub fn pop(&mut self) -> Option<Value> {
-    self.stack_size -= 1;
     self.stack.pop()
   }
 }
@@ -82,7 +76,7 @@ mod test {
   #[test]
   fn empty_stack_default() {
     let vm = Vm::new();
-    assert_eq!(vm.stack_size, 0);
+    assert_eq!(vm.stack.len(), 0);
   }
 
   #[test]
@@ -90,7 +84,7 @@ mod test {
     let mut vm = Vm::new();
     let val = Str(~"Hello World");
     vm.push(val);
-    assert_eq!(vm.stack_size, 1);
+    assert_eq!(vm.stack.len(), 1);
     assert_eq!(vm.stack[0], Str(~"Hello World"));
   }
 
