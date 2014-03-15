@@ -24,7 +24,6 @@ impl Gc {
 #[cfg(test)]
 mod test {
   use super::Gc;
-  use vm::Value;
   use vm::Int;
   use std::rc::Rc;
 

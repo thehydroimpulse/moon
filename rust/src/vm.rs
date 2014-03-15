@@ -46,7 +46,7 @@ impl Eq for Value {
     match *self {
       Int(i) => {
         match *other {
-          Int(ii) => i == i,
+          Int(ii) => i == ii,
           _ => fail!("Invalid comparison.")
         }
       },
