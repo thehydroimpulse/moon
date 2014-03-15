@@ -154,8 +154,23 @@ mod test {
   fn next_token() {
     // Should spit out two tokens (LPAREN,RPAREN)
     let mut lex = Lexer::new(&"()");
-    assert!(lex.next_token().unwrap().value == &"("); //TokenValue::new(LPAREN, "("));
+    assert!(lex.next_token().unwrap().value == &"(");
     assert!(lex.next_token().unwrap().value == &")");  
+  }
+
+  #[test]
+  fn return_complex_tokens() {
+    let mut lex = Lexer::new(&"(+(():830");
+
+    assert!(lex.next_token().unwrap().value == &"(");
+    assert!(lex.next_token().unwrap().value == &"+");
+    assert!(lex.next_token().unwrap().value == &"(");
+    assert!(lex.next_token().unwrap().value == &"(");
+    assert!(lex.next_token().unwrap().value == &")");
+    assert!(lex.next_token().unwrap().value == &":");
+    assert!(lex.next_token().unwrap().value == &"8");
+    assert!(lex.next_token().unwrap().value == &"3");
+    assert!(lex.next_token().unwrap().value == &"0");
   }
 
 }
