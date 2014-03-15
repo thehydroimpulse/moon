@@ -39,6 +39,8 @@ mod test {
     let val = Int(55);
     let mut gc = Gc::new();
     gc.register_root(Rc::new(val));
+
+    assert_eq!(gc.roots.len(), 1);
   }
 
 }
