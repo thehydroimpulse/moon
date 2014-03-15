@@ -96,24 +96,24 @@ impl<'a> Lexer<'a> {
   }
 
   pub fn next_token(&mut self) -> Option<TokenValue<'a>> {
-    return Some(TokenValue::new(LPAREN, &"9"));
+    
     for c in self.iter {
       match c {
-        //'(' => return Some(TokenValue::new(LPAREN, 9)),
-        // ')' => return Some(TokenValue::new(RPAREN, ')')),
-        // '+' => return Some(TokenValue::new(PLUS, '+')),
-        // '-' => return Some(TokenValue::new(MINUS, '-')),
-        // ':' => return Some(TokenValue::new(COLON, ':')),
-        // '9' => return Some(TokenValue::new(INTEGER, 9)),
-        // '8' => return Some(TokenValue::new(INTEGER, 8)),
-        // '7' => return Some(TokenValue::new(INTEGER, 7)),
-        // '6' => return Some(TokenValue::new(INTEGER, 6)),
-        // '5' => return Some(TokenValue::new(INTEGER, 5)),
-        // '4' => return Some(TokenValue::new(INTEGER, 4)),
-        // '3' => return Some(TokenValue::new(INTEGER, 3)),
-        // '2' => return Some(TokenValue::new(INTEGER, 2)),
-        // '1' => return Some(TokenValue::new(INTEGER, 1)),
-        // '0' => return Some(TokenValue::new(INTEGER, 0)),
+        '(' => return Some(TokenValue::new(LPAREN, &"(")),
+        ')' => return Some(TokenValue::new(RPAREN, &")")),
+        '+' => return Some(TokenValue::new(PLUS, &"+")),
+        '-' => return Some(TokenValue::new(MINUS, &"-")),
+        ':' => return Some(TokenValue::new(COLON, &":")),
+        '9' => return Some(TokenValue::new(INTEGER, &"9")),
+        '8' => return Some(TokenValue::new(INTEGER, &"8")),
+        '7' => return Some(TokenValue::new(INTEGER, &"7")),
+        '6' => return Some(TokenValue::new(INTEGER, &"6")),
+        '5' => return Some(TokenValue::new(INTEGER, &"5")),
+        '4' => return Some(TokenValue::new(INTEGER, &"4")),
+        '3' => return Some(TokenValue::new(INTEGER, &"3")),
+        '2' => return Some(TokenValue::new(INTEGER, &"2")),
+        '1' => return Some(TokenValue::new(INTEGER, &"1")),
+        '0' => return Some(TokenValue::new(INTEGER, &"0")),
         _ => return None
       }
     }
@@ -154,7 +154,7 @@ mod test {
   fn next_token() {
     // Should spit out two tokens (LPAREN,RPAREN)
     let mut lex = Lexer::new(&"()");
-    assert!(lex.next_token().unwrap().value == &"9"); //TokenValue::new(LPAREN, "("));
+    assert!(lex.next_token().unwrap().value == &"("); //TokenValue::new(LPAREN, "("));
   }
 
 }
