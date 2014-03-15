@@ -12,7 +12,21 @@ pub enum Value {
 
 impl Eq for Value {
   fn eq(&self, other: &Value) -> bool {
-    true
+    match *self {
+      Int(i) => {
+        match *other {
+          Int(ii) => i == i,
+          _ => fail!("Invalid comparison.")
+        }
+      },
+      Str(ref r) => {
+        match *other {
+          Str(ref s) => r == s,
+          _ => fail!("Invalid comparison.")
+        }
+      },
+      _ => fail!("Missing further `Eq` implementations.")
+    }
   }
 }
 
@@ -77,7 +91,7 @@ mod test {
     let val = Str(~"Hello World");
     vm.push(val);
     assert_eq!(vm.stack_size, 1);
-    //assert_eq!(vm.stack[0], val);
+    assert_eq!(vm.stack[0], Str(~"Hello World"));
   }
 
 }
