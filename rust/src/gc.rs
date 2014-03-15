@@ -1,4 +1,5 @@
 use vm::Value;
+use std::rc::Rc;
 
 #[experimental]
 pub struct Gc {
@@ -14,7 +15,7 @@ impl Gc {
     }
   }
 
-  pub fn register_root(val: Value) {
+  pub fn register_root(&mut self, root: Rc<Value>) {
 
   }
 }

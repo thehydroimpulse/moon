@@ -32,7 +32,9 @@ impl Vm {
   }
 
   pub fn push(&mut self, val: Value) {
-    self.stack.push(Rc::new(val));
+    let ptr = Rc::new(val);
+    self.gc.register_root(ptr.clone());
+    self.stack.push(ptr);
   }
 
   pub fn pop(&mut self) -> Option<Value> {
