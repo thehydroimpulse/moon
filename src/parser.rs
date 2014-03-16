@@ -1,6 +1,6 @@
 use lexer::{Token, TokIden, TokInt, RBRACKET, LBRACKET, LPAREN, RPAREN, COLON, INTEGER, PLUS, MINUS};
 use lexer;
-use ast::{Ast, NumberExprAst, BindingExprAst, LetExprAst, BinaryExprAst};
+use ast::{Ast, NumberExprAst, BindingExprAst, LetExprAst, BinaryExprAst, Empty};
 use ast;
 
 pub struct Parser<'a> {
@@ -54,6 +54,10 @@ impl<'a> Parser<'a> {
         }
     }
 
+    pub fn peek(&mut self) -> Option<Token> {
+        self.lexer.peek_token()
+    }
+
     pub fn parse_form(&mut self, tok: Token) -> Ast {
         match tok {
             TokIden(~"defn") => fail!("Functions are not implemented yet."),
@@ -62,7 +66,7 @@ impl<'a> Parser<'a> {
                 match self.bump() {
                     Some(r) => {
                         if r == LBRACKET {
-                            let mut bindings: ~[Ast] = ~[];
+                            let mut bindings: ~[~Ast] = ~[];
                             let mut found_ending = false;
                             // Loop until we find the end bracket or fail.
                             loop {
@@ -74,7 +78,7 @@ impl<'a> Parser<'a> {
                                                 // Parse another expression
                                                 let value = ~self.parse_expression();
                                                 let b = BindingExprAst(r, value);
-                                                bindings.push(b);
+                                                bindings.push(~b);
                                             },
                                             RBRACKET => {
                                                 found_ending = true;
@@ -91,7 +95,19 @@ impl<'a> Parser<'a> {
                                 fail!("Expected ending `]` bracket.");
                             }
 
-                            NumberExprAst(9)
+                            match self.peek() {
+                                Some(m) => {
+                                    match m {
+                                        RPAREN => {
+                                            LetExprAst(bindings, ~Empty)
+                                        },
+                                        _ => {
+                                            LetExprAst(bindings, ~self.parse_expression())
+                                        }
+                                    }
+                                },
+                                None => fail!("Expected ending `)`.")
+                            }
                         } else {
                             fail!("Expected `[` token.")
                         }

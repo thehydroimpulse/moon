@@ -9,7 +9,7 @@ struct LexerIterator<'a> {
     line: uint,
     next: uint,
     current: Option<char>,
-    peek: Option<char>,
+    peektok: Option<char>,
     previous: Option<char>
 }
 
@@ -21,7 +21,7 @@ impl<'a> LexerIterator<'a> {
             next: 0,
             line: 1,
             current: None,
-            peek: None,
+            peektok: None,
             previous: None
         }
     }
@@ -45,7 +45,7 @@ impl<'a> LexerIterator<'a> {
     pub fn peek(&mut self) -> Option<char> {
         if self.string.len() != 0 && self.pos < self.string.len() {
             let CharRange {ch, next} = self.string.char_range_at(self.pos);
-            self.peek = Some(ch);
+            self.peektok = Some(ch);
             Some(ch)
         } else {
             None
@@ -83,71 +83,88 @@ impl<'a> Lexer<'a> {
         }
     }
 
+    pub fn peek_token(&mut self) -> Option<Token> {
+        unsafe { self.get(true) }
+    }
+
     pub fn next_token(&mut self) -> Option<Token> {
-        unsafe {
-            for c in *self.iter {
-                match c {
-                    ' ' => continue,
-                    '\r' => continue,
-                    '\n' => {
-                        (*self.iter).line += 1;
-                        continue 
-                    },
-                    '[' => return Some(LBRACKET),
-                    ']' => return Some(RBRACKET),
-                    '(' => return Some(LPAREN),
-                    ')' => return Some(RPAREN),
-                    '+' => return Some(PLUS),
-                    '-' => return Some(MINUS),
-                    ':' => return Some(COLON),
-                    '9' => return Some(TokInt(9)),
-                    '8' => return Some(TokInt(8)),
-                    '7' => return Some(TokInt(7)),
-                    '6' => return Some(TokInt(6)),
-                    '5' => return Some(TokInt(5)),
-                    '4' => return Some(TokInt(4)),
-                    '3' => return Some(TokInt(3)),
-                    '2' => return Some(TokInt(2)),
-                    '1' => return Some(TokInt(1)),
-                    '0' => return Some(TokInt(0)),
-                    _ => {
+        unsafe { self.get(false) }
+    }
 
-                        let mut current = ~"";
-                        let mut previous = ~"";
-                            
-                        // Push the current character
-                        current.push_char(c);
+    pub unsafe fn get(&mut self, peek: bool) -> Option<Token> {
+        loop {
+            
 
-                        loop {
-                            // Try the next character. If we get a valid identifier
-                            // than we can move the position of the iterator.
-                            match (*self.iter).peek() {
-                                Some(character) => {
-                                    // Lets save the current buffer as the previous.
-                                    // This ensures that if this character makes the invalidation,
-                                    // we can return the previously valid string.
-                                    previous = current.clone();
+            match if peek {
+                (*self.iter).peek()
+            } else {
+                (*self.iter).next()
+            } {
+                Some(c) => {
+                    match c {
+                        ' ' => continue,
+                        '\r' => continue,
+                        '\n' => {
+                            (*self.iter).line += 1;
+                            continue 
+                        },
+                        '[' => return Some(LBRACKET),
+                        ']' => return Some(RBRACKET),
+                        '(' => return Some(LPAREN),
+                        ')' => return Some(RPAREN),
+                        '+' => return Some(PLUS),
+                        '-' => return Some(MINUS),
+                        ':' => return Some(COLON),
+                        '9' => return Some(TokInt(9)),
+                        '8' => return Some(TokInt(8)),
+                        '7' => return Some(TokInt(7)),
+                        '6' => return Some(TokInt(6)),
+                        '5' => return Some(TokInt(5)),
+                        '4' => return Some(TokInt(4)),
+                        '3' => return Some(TokInt(3)),
+                        '2' => return Some(TokInt(2)),
+                        '1' => return Some(TokInt(1)),
+                        '0' => return Some(TokInt(0)),
+                        _ => {
 
-                                    // Push the new chracter onto the current buffer.
-                                    current.push_char(character);
+                            let mut current = ~"";
+                            let mut previous = ~"";
+                                
+                            // Push the current character
+                            current.push_char(c);
 
-                                    if is_iden(current) {
-                                        (*self.iter).next();
-                                    }
+                            loop {
+                                // Try the next character. If we get a valid identifier
+                                // than we can move the position of the iterator.
+                                match (*self.iter).peek() {
+                                    Some(character) => {
+                                        // Lets save the current buffer as the previous.
+                                        // This ensures that if this character makes the invalidation,
+                                        // we can return the previously valid string.
+                                        previous = current.clone();
 
-                                    if !is_iden(current) && is_iden(previous) {
-                                        return Some(TokIden(previous));
-                                    }
-                                },
-                                None => { break }
+                                        // Push the new chracter onto the current buffer.
+                                        current.push_char(character);
+
+                                        if is_iden(current) {
+                                            (*self.iter).next();
+                                        }
+
+                                        if !is_iden(current) && is_iden(previous) {
+                                            return Some(TokIden(previous));
+                                        }
+                                    },
+                                    None => { break }
+                                }
+                            }
+
+                            if !is_iden(current) && is_iden(previous) {
+                                return return Some(TokIden(previous));
                             }
                         }
-
-                        if !is_iden(current) && is_iden(previous) {
-                            return return Some(TokIden(previous));
-                        }
-                    }
-                }
+                    } //
+                },
+                None => { break }
             }
         }
         None

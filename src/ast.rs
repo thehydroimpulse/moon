@@ -2,10 +2,11 @@ use std::rc::Rc;
 use lexer;
 
 pub enum Ast {
-    LetExprAst(~[~Ast]),
+    LetExprAst(~[~Ast], ~Ast),
     BindingExprAst(~str, ~Ast),
     NumberExprAst(i32),
-    BinaryExprAst(lexer::Token, ~Ast, ~Ast)
+    BinaryExprAst(lexer::Token, ~Ast, ~Ast),
+    Empty
 }
 
 
