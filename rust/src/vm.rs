@@ -6,9 +6,18 @@ use std::rc::{Rc};
 /// A generic value within our virtual machine. A value
 /// can be anything defined within this enum.
 pub enum Value {
-  Int(u32),
+  Int(i32),
   Str(~str),
   Pair(~Value, ~Value)
+}
+
+pub enum OpCode {
+  XAdd = 0,
+  XSub,
+  XMul,
+  XDiv,
+  XPush,
+  XPop
 }
 
 /// A virtual machine that holds needed objects (gc, stack, etc...) and
@@ -38,6 +47,10 @@ impl Vm {
 
   pub fn pop(&mut self) -> Option<Value> {
     Some((*self.stack.pop().unwrap()).clone())
+  }
+
+  pub fn run(&mut self, string: &str) {
+
   }
 }
 
@@ -99,6 +112,16 @@ mod test {
     vm.push(val);
     assert_eq!(vm.stack.len(), 1);
     assert_eq!(*vm.stack[0], Str(~"Hello World"));
+  }
+
+  #[test]
+  fn should_run() {
+
+  }
+
+  #[test]
+  fn should_parse_input() {
+    
   }
 
 }
