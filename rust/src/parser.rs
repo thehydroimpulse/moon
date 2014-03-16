@@ -32,18 +32,20 @@ impl<'a> Parser<'a> {
     /// @effect(Fail)
     /// 
     pub fn parse_expression(&mut self) -> Ast {
-        let mut tok = self.bump().unwrap();
-
+        let tok = self.bump().unwrap();
         match tok {
             lexer::LPAREN => {
                 // Parse an iden
                 match self.bump().unwrap() {
                     TokIden(s) => {
-                        self.parse_form(tok)
+                        self.parse_form()
                     },
                     _ => fail!("Expected an iden token.")
                 }
             },
+            TokIden(s) => {
+                fail!("Unexpected iden. Expected an expression.")
+            }
             TokInt(i) => {
                 NumberExprAst(i)
             },
@@ -51,8 +53,8 @@ impl<'a> Parser<'a> {
         }
     }
 
-    pub fn parse_form(&mut self, tok: Token) -> Ast {
-
+    pub fn parse_form(&mut self) -> Ast {
+        let tok = self.bump().unwrap();
         match tok {
             TokIden(~"defn") => fail!("Functions are not implemented yet."),
             TokIden(~"let")  => {
@@ -64,16 +66,21 @@ impl<'a> Parser<'a> {
                             // Loop until we find the end bracket or fail.
                             loop {
 
-                                let expr = match self.bump().unwrap() {
-                                    TokIden(r) => {
-                                        println!("curr{}", r);
-                                        // Parse another expression
-                                        let value = ~self.parse_expression();
-                                        let b = ast::BindingExprAst(r, value);
-                                        //bindings.push();
+                                match self.bump() {
+                                    Some(tt) => {
+                                        let expr = match self.bump().unwrap() {
+                                            TokIden(r) => {
+                                                println!("curr{}", r);
+                                                // Parse another expression
+                                                let value = ~self.parse_expression();
+                                                let b = ast::BindingExprAst(r, value);
+                                                //bindings.push();
+                                            },
+                                            _ => break
+                                        };
                                     },
-                                    _ => fail!("oops")
-                                };
+                                    None => break
+                                }
                             }
 
                             NumberExprAst(9)
@@ -84,7 +91,7 @@ impl<'a> Parser<'a> {
                     None => fail!("Expected `[` token, but found none.")
                 }
             },
-            _ => fail!("Unimplemented form.")
+            _ => fail!("Unimplemented form. {}", tok)
         }
     }
 }

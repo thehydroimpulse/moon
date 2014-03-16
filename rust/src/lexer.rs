@@ -117,7 +117,6 @@ impl<'a> Lexer<'a> {
                             
                         // Push the current character
                         current.push_char(c);
-                        println!("{}", current);
 
                         loop {
                             // Try the next character. If we get a valid identifier
