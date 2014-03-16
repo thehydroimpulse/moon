@@ -1,8 +1,7 @@
 use lexer::{Token, TokIden, TokInt, RBRACKET, LBRACKET, LPAREN, RPAREN, COLON, INTEGER, PLUS, MINUS};
 use lexer;
+use ast::{Ast, NumberExprAst, BindingExprAst, LetExprAst, BinaryExprAst};
 use ast;
-use ast::{Ast, NumberExprAst, LetExprAst, BinaryExprAst};
-use std::from_str;
 
 pub struct Parser<'a> {
     lexer: lexer::Lexer<'a>
@@ -33,12 +32,14 @@ impl<'a> Parser<'a> {
     /// 
     pub fn parse_expression(&mut self) -> Ast {
         let tok = self.bump().unwrap();
+        println!("(expr {})", tok);
         match tok {
             lexer::LPAREN => {
+                println!("found lparen");
                 // Parse an iden
                 match self.bump().unwrap() {
                     TokIden(s) => {
-                        self.parse_form()
+                        self.parse_form(TokIden(s))
                     },
                     _ => fail!("Expected an iden token.")
                 }
@@ -53,34 +54,41 @@ impl<'a> Parser<'a> {
         }
     }
 
-    pub fn parse_form(&mut self) -> Ast {
-        let tok = self.bump().unwrap();
+    pub fn parse_form(&mut self, tok: Token) -> Ast {
         match tok {
             TokIden(~"defn") => fail!("Functions are not implemented yet."),
             TokIden(~"let")  => {
                 // Parse the bindings.
                 match self.bump() {
                     Some(r) => {
-                        if r == TokIden(~"[") {
-                            let bindings = ~[ast::BindingExprAst];
+                        if r == LBRACKET {
+                            let mut bindings: ~[Ast] = ~[];
+                            let mut found_ending = false;
                             // Loop until we find the end bracket or fail.
                             loop {
-
                                 match self.bump() {
                                     Some(tt) => {
-                                        let expr = match self.bump().unwrap() {
+                                        let expr = match tt {
                                             TokIden(r) => {
-                                                println!("curr{}", r);
+                                                println!("(iden {})", r);
                                                 // Parse another expression
                                                 let value = ~self.parse_expression();
-                                                let b = ast::BindingExprAst(r, value);
-                                                //bindings.push();
+                                                let b = BindingExprAst(r, value);
+                                                bindings.push(b);
+                                            },
+                                            RBRACKET => {
+                                                found_ending = true;
+                                                break
                                             },
                                             _ => break
                                         };
                                     },
                                     None => break
                                 }
+                            }
+
+                            if !found_ending {
+                                fail!("Expected ending `]` bracket.");
                             }
 
                             NumberExprAst(9)
