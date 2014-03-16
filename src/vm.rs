@@ -2,6 +2,7 @@ use gc::Gc;
 use std::fmt::{Show,Formatter};
 use std::fmt;
 use std::rc::{Rc};
+use ast::{Ast, LetExprAst, BindingExprAst, NumberExprAst, BinaryExprAst};
 
 /// A generic value within our virtual machine. A value
 /// can be anything defined within this enum.
@@ -12,12 +13,20 @@ pub enum Value {
 }
 
 pub enum OpCode {
-  XAdd = 0,
+  XAdd(int, int),
   XSub,
   XMul,
   XDiv,
   XPush,
   XPop
+}
+
+pub enum Register {
+  Reg1,
+  Reg2,
+  Reg3,
+  Reg4,
+  RegPc // Program/OpCode Counter
 }
 
 /// A virtual machine that holds needed objects (gc, stack, etc...) and
@@ -28,14 +37,24 @@ pub struct Vm {
 
   /// Our small stack. For simplicity, we'll limit this to 
   /// a static value.
-  stack: ~[Rc<Value>]
+  stack: ~[Rc<Value>],
+
+  registers: [Option<Value>, ..4],
+
+  /// OpCodes
+  opcodes: ~[OpCode],
+
+  pc: int
 }
 
 impl Vm {
   pub fn new() -> Vm {
     Vm {
       gc: Gc::new(),
-      stack: ~[]
+      stack: ~[],
+      opcodes: ~[],
+      registers: [None, None, None, None],
+      pc: 0
     }
   }
 

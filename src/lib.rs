@@ -11,3 +11,4 @@ mod gc;
 mod lexer;
 mod ast;
 mod parser;
+mod gen;
