@@ -125,14 +125,12 @@ impl<'a> Parser<'a> {
 mod test {
     use super::*;
     use ast::*;
+    use lexer::*;
 
     #[test]
     fn parse_expression() {
         let mut parser = Parser::new(&"(let [x 5])");
-        parser.parse_expression();
-        //match parser.parse_expression() {
-        //    NumberExprAst(r) => assert_eq!(r, 9),
-        //    _ => fail!("Not expected.")
-        //}
+        let expr = LetExprAst(~[~BindingExprAst(~"x", ~NumberExprAst(5))], ~Empty);
+        assert_eq!(expr, parser.parse_expression());
     }
 }

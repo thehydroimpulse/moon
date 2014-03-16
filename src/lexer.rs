@@ -55,6 +55,7 @@ impl<'a> LexerIterator<'a> {
 }
 
 /// Lexer tokens.
+#[deriving(Clone)]
 pub enum Token {
     PLUS,
     MINUS,
