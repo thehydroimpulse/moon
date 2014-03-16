@@ -25,7 +25,10 @@ impl<'a> Parser<'a> {
     }
 
     pub fn parse_number(&mut self) -> Ast {
-        let num: i32 = from_str(self.current_token.unwrap().value).unwrap();
+        let num: i32 = match self.current_token {
+            Some(ref token) => from_str(token.value).unwrap(),
+            None => { fail!("Invalid token found.") }
+        };
         let expr = NumberExprAst(num);
         self.bump();
         return expr;
