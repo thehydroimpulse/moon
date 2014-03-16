@@ -81,6 +81,13 @@ pub enum Token {
     RBRACKET
 }
 
+
+pub enum TokValue {
+    TokInt(Token, i32),
+    TokStr(Token, ~str),
+    Tok(Token)
+}
+
 /// Lexer
 pub struct Lexer<'a> {
     iter: *mut LexerIterator<'a>,
@@ -129,6 +136,7 @@ impl<'a> Lexer<'a> {
                             
                         // Push the current character
                         current.push_char(c);
+                        println!("{}", current);
 
                         loop {
                             // Try the next character. If we get a valid identifier

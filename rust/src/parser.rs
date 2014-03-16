@@ -43,7 +43,7 @@ impl<'a> Parser<'a> {
     /// 
     pub fn parse_expression(&mut self) -> Ast {
         let mut tok = self.bump().unwrap();
-        
+
         match tok.token {
             lexer::LPAREN => {
                 // Parse an iden
@@ -68,17 +68,21 @@ impl<'a> Parser<'a> {
             ~"defn" => fail!("Functions are not implemented yet."),
             ~"let" => {
                 // Parse the bindings.
-                match self.current_token.take() {
+                match self.bump() {
                     Some(r) => {
                         if r.value == ~"[" {
                             let bindings = ~[ast::BindingExprAst];
                             // Loop until we find the end bracket or fail.
                             loop {
-                                self.bump();
-                                let curr = self.current_token.take().unwrap();
+                                let curr = match self.bump() {
+                                    Some(r) => r,
+                                    None => {
+                                        println!("{}", r.value)
+                                        fail!("Oops")
+                                    }
+                                };
                                 let expr = match curr.token { 
                                     lexer::IDEN => {
-                                        self.bump();
                                         // Parse another expression
                                         let value = ~self.parse_expression();
                                         let b = ast::BindingExprAst(curr.value, value);
@@ -111,8 +115,8 @@ mod test {
     #[test]
     fn parse_number() {
         let mut parser = Parser::new(&"9");
-        parser.bump();
-        match parser.parse_number() {
+        let n = parser.bump().unwrap();
+        match parser.parse_number(n) {
             NumberExprAst(r) => assert_eq!(r, 9),
             _ => fail!("Not expected.")
         }
@@ -121,7 +125,6 @@ mod test {
     #[test]
     fn parse_expression() {
         let mut parser = Parser::new(&"(let [x 5])");
-        parser.bump();
         parser.parse_expression();
         //match parser.parse_expression() {
         //    NumberExprAst(r) => assert_eq!(r, 9),
