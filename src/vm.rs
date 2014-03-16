@@ -14,9 +14,9 @@ pub enum Value {
 
 pub enum OpCode {
   XAdd(int, int),
-  XSub,
-  XMul,
-  XDiv,
+  XSub(int, int),
+  XMul(int, int),
+  XDiv(int, int),
   XPush,
   XPop
 }
