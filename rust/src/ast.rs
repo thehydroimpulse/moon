@@ -3,7 +3,7 @@ use lexer;
 
 pub enum Ast {
     LetExprAst(~[~Ast]),
-    BindingExprAst(~Ast, ~Ast),
+    BindingExprAst(~str, ~Ast),
     NumberExprAst(i32),
     BinaryExprAst(lexer::Token, ~Ast, ~Ast)
 }

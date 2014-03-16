@@ -1,48 +1,32 @@
 use lexer::TokenValue;
 use lexer;
-use ast::{Ast, NumberExprAst, BindingExprAst, LetExprAst, BinaryExprAst};
+use ast;
+use ast::{Ast, NumberExprAst, LetExprAst, BinaryExprAst};
 use std::from_str;
 
-static BinaryPlusPrec: uint = 20;
-static BinaryMinusPrec: uint = 20;
-static BinaryMulPrec: uint = 40;
-static BinaryDivPrec: uint = 40;
-
 pub struct Parser<'a> {
-    next_token: Option<TokenValue>,
-    current_token: Option<TokenValue>,
     lexer: lexer::Lexer<'a>
 }
 
 impl<'a> Parser<'a> {
     pub fn new(input: &'a str) -> Parser<'a> {
         Parser {
-            next_token: None,
-            current_token: None,
             lexer: lexer::Lexer::new(input)
         }
     }
 
-    pub fn bump(&mut self) {
-        if self.next_token.is_some() {
-            self.current_token = self.next_token.take();
-        } else {
-            self.current_token = self.lexer.next_token();
-        }
-    }
-
-    pub fn peek(&mut self) {
-        self.next_token = self.lexer.next_token();
+    pub fn bump(&mut self) -> Option<TokenValue> {
+        self.lexer.next_token()
     }
 
     pub fn parse(&mut self) {
         
     }
 
-    pub fn parse_number(&mut self) -> Ast {
-        let num: i32 = match self.current_token {
-            Some(ref token) => from_str(token.value).unwrap(),
-            None => { fail!("Invalid token found.") }
+    pub fn parse_number(&mut self, tok: TokenValue) -> Ast {
+        let num: i32 = match from_str::<i32>(tok.value) {
+            Some(r) => r,
+            None => fail!("Unable to pase number.")
         };
         let expr = NumberExprAst(num);
         self.bump();
@@ -58,30 +42,28 @@ impl<'a> Parser<'a> {
     /// @effect(Fail)
     /// 
     pub fn parse_expression(&mut self) -> Ast {
-        let mut tok = self.current_token.take().unwrap();
+        let mut tok = self.bump().unwrap();
         
-        if tok.token != lexer::LPAREN {
-            fail!("Expected an expression to begin with `(` (left parentheses).");
+        match tok.token {
+            lexer::LPAREN => {
+                // Parse an iden
+                tok = self.bump().unwrap();
+
+                if tok.token != lexer::IDEN {
+                    fail!("Expected an identifier next.");
+                }
+
+                self.parse_form(tok)
+            },
+            lexer::INTEGER => {
+                self.parse_number(tok)
+            },
+            _ => fail!("Expected an expression to begin with `(` (left parentheses) or a number.")
         }
-
-        // Parse an iden
-        self.bump();
-
-        tok = self.current_token.take().unwrap();
-
-        if tok.token != lexer::IDEN {
-            fail!("Expected an identifier next.");
-        }
-
-        self.bump();
-        //self.parse_form(tok);
-
-        NumberExprAst(1)
     }
 
     pub fn parse_form(&mut self, tok: lexer::TokenValue) -> Ast {
-        println!("{}", tok.value);
-        return NumberExprAst(4);
+
         match tok.value {
             ~"defn" => fail!("Functions are not implemented yet."),
             ~"let" => {
@@ -89,6 +71,24 @@ impl<'a> Parser<'a> {
                 match self.current_token.take() {
                     Some(r) => {
                         if r.value == ~"[" {
+                            let bindings = ~[ast::BindingExprAst];
+                            // Loop until we find the end bracket or fail.
+                            loop {
+                                self.bump();
+                                let curr = self.current_token.take().unwrap();
+                                let expr = match curr.token { 
+                                    lexer::IDEN => {
+                                        self.bump();
+                                        // Parse another expression
+                                        let value = ~self.parse_expression();
+                                        let b = ast::BindingExprAst(curr.value, value);
+                                        //bindings.push();
+                                    },
+                                    lexer::RBRACKET => break,
+                                    _ => {}
+                                };
+                            }
+
                             NumberExprAst(9)
                         } else {
                             fail!("Expected `[` token.")
