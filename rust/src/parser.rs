@@ -1,4 +1,4 @@
-use lexer::TokenValue;
+use lexer::{Token, TokIden, TokInt, RBRACKET, LBRACKET, LPAREN, RPAREN, COLON, INTEGER, PLUS, MINUS};
 use lexer;
 use ast;
 use ast::{Ast, NumberExprAst, LetExprAst, BinaryExprAst};
@@ -15,22 +15,12 @@ impl<'a> Parser<'a> {
         }
     }
 
-    pub fn bump(&mut self) -> Option<TokenValue> {
+    pub fn bump(&mut self) -> Option<Token> {
         self.lexer.next_token()
     }
 
     pub fn parse(&mut self) {
         
-    }
-
-    pub fn parse_number(&mut self, tok: TokenValue) -> Ast {
-        let num: i32 = match from_str::<i32>(tok.value) {
-            Some(r) => r,
-            None => fail!("Unable to pase number.")
-        };
-        let expr = NumberExprAst(num);
-        self.bump();
-        return expr;
     }
 
     /// An expression is of the form:
@@ -44,52 +34,45 @@ impl<'a> Parser<'a> {
     pub fn parse_expression(&mut self) -> Ast {
         let mut tok = self.bump().unwrap();
 
-        match tok.token {
+        match tok {
             lexer::LPAREN => {
                 // Parse an iden
-                tok = self.bump().unwrap();
-
-                if tok.token != lexer::IDEN {
-                    fail!("Expected an identifier next.");
+                match self.bump().unwrap() {
+                    TokIden(s) => {
+                        self.parse_form(tok)
+                    },
+                    _ => fail!("Expected an iden token.")
                 }
-
-                self.parse_form(tok)
             },
-            lexer::INTEGER => {
-                self.parse_number(tok)
+            TokInt(i) => {
+                NumberExprAst(i)
             },
             _ => fail!("Expected an expression to begin with `(` (left parentheses) or a number.")
         }
     }
 
-    pub fn parse_form(&mut self, tok: lexer::TokenValue) -> Ast {
+    pub fn parse_form(&mut self, tok: Token) -> Ast {
 
-        match tok.value {
-            ~"defn" => fail!("Functions are not implemented yet."),
-            ~"let" => {
+        match tok {
+            TokIden(~"defn") => fail!("Functions are not implemented yet."),
+            TokIden(~"let")  => {
                 // Parse the bindings.
                 match self.bump() {
                     Some(r) => {
-                        if r.value == ~"[" {
+                        if r == TokIden(~"[") {
                             let bindings = ~[ast::BindingExprAst];
                             // Loop until we find the end bracket or fail.
                             loop {
-                                let curr = match self.bump() {
-                                    Some(r) => r,
-                                    None => {
-                                        println!("{}", r.value)
-                                        fail!("Oops")
-                                    }
-                                };
-                                let expr = match curr.token { 
-                                    lexer::IDEN => {
+
+                                let expr = match self.bump().unwrap() {
+                                    TokIden(r) => {
+                                        println!("curr{}", r);
                                         // Parse another expression
                                         let value = ~self.parse_expression();
-                                        let b = ast::BindingExprAst(curr.value, value);
+                                        let b = ast::BindingExprAst(r, value);
                                         //bindings.push();
                                     },
-                                    lexer::RBRACKET => break,
-                                    _ => {}
+                                    _ => fail!("oops")
                                 };
                             }
 
@@ -111,16 +94,6 @@ impl<'a> Parser<'a> {
 mod test {
     use super::*;
     use ast::*;
-
-    #[test]
-    fn parse_number() {
-        let mut parser = Parser::new(&"9");
-        let n = parser.bump().unwrap();
-        match parser.parse_number(n) {
-            NumberExprAst(r) => assert_eq!(r, 9),
-            _ => fail!("Not expected.")
-        }
-    }
 
     #[test]
     fn parse_expression() {

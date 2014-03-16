@@ -3,20 +3,6 @@ use std::fmt;
 use std::cast::transmute;
 use std::str::CharRange;
 
-pub struct TokenValue {
-    token: Token,
-    value: ~str
-}
-
-impl TokenValue {
-    pub fn new(tok: Token, val: ~str) -> TokenValue {
-        TokenValue {
-            token: tok,
-            value: val
-        }
-    }
-}
-
 struct LexerIterator<'a> {
     string: &'a str,
     pos: uint,
@@ -78,14 +64,9 @@ pub enum Token {
     RPAREN,
     COLON,
     LBRACKET,
-    RBRACKET
-}
-
-
-pub enum TokValue {
-    TokInt(Token, i32),
-    TokStr(Token, ~str),
-    Tok(Token)
+    RBRACKET,
+    TokInt(i32),
+    TokIden(~str)
 }
 
 /// Lexer
@@ -102,7 +83,7 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    pub fn next_token(&mut self) -> Option<TokenValue> {
+    pub fn next_token(&mut self) -> Option<Token> {
         unsafe {
             for c in *self.iter {
                 match c {
@@ -112,23 +93,23 @@ impl<'a> Lexer<'a> {
                         (*self.iter).line += 1;
                         continue 
                     },
-                    '[' => return Some(TokenValue::new(LBRACKET, ~"[")),
-                    ']' => return Some(TokenValue::new(RBRACKET, ~"]")),
-                    '(' => return Some(TokenValue::new(LPAREN, ~"(")),
-                    ')' => return Some(TokenValue::new(RPAREN, ~")")),
-                    '+' => return Some(TokenValue::new(PLUS, ~"+")),
-                    '-' => return Some(TokenValue::new(MINUS, ~"-")),
-                    ':' => return Some(TokenValue::new(COLON, ~":")),
-                    '9' => return Some(TokenValue::new(INTEGER, ~"9")),
-                    '8' => return Some(TokenValue::new(INTEGER, ~"8")),
-                    '7' => return Some(TokenValue::new(INTEGER, ~"7")),
-                    '6' => return Some(TokenValue::new(INTEGER, ~"6")),
-                    '5' => return Some(TokenValue::new(INTEGER, ~"5")),
-                    '4' => return Some(TokenValue::new(INTEGER, ~"4")),
-                    '3' => return Some(TokenValue::new(INTEGER, ~"3")),
-                    '2' => return Some(TokenValue::new(INTEGER, ~"2")),
-                    '1' => return Some(TokenValue::new(INTEGER, ~"1")),
-                    '0' => return Some(TokenValue::new(INTEGER, ~"0")),
+                    '[' => return Some(LBRACKET),
+                    ']' => return Some(RBRACKET),
+                    '(' => return Some(LPAREN),
+                    ')' => return Some(RPAREN),
+                    '+' => return Some(PLUS),
+                    '-' => return Some(MINUS),
+                    ':' => return Some(COLON),
+                    '9' => return Some(TokInt(9)),
+                    '8' => return Some(TokInt(8)),
+                    '7' => return Some(TokInt(7)),
+                    '6' => return Some(TokInt(6)),
+                    '5' => return Some(TokInt(5)),
+                    '4' => return Some(TokInt(4)),
+                    '3' => return Some(TokInt(3)),
+                    '2' => return Some(TokInt(2)),
+                    '1' => return Some(TokInt(1)),
+                    '0' => return Some(TokInt(0)),
                     _ => {
 
                         let mut current = ~"";
@@ -156,7 +137,7 @@ impl<'a> Lexer<'a> {
                                     }
 
                                     if !is_iden(current) && is_iden(previous) {
-                                        return Some(TokenValue::new(IDEN, previous));
+                                        return Some(TokIden(previous));
                                     }
                                 },
                                 None => { break }
@@ -164,7 +145,7 @@ impl<'a> Lexer<'a> {
                         }
 
                         if !is_iden(current) && is_iden(previous) {
-                            return Some(TokenValue::new(IDEN, previous));
+                            return return Some(TokIden(previous));
                         }
                     }
                 }
@@ -174,8 +155,8 @@ impl<'a> Lexer<'a> {
     }
 }
 
-// An iden is identified by:
-// /^([A-Za-z-+*^][A-Za-z0-9-_]*)$/
+/// An iden is identified by:
+/// /^([A-Za-z-+*^][A-Za-z0-9-_]*)$/
 pub fn is_iden<'b>(ch: &'b str) -> bool {
     // Create a new iterator
     let mut iter = ch.chars().peekable();
@@ -271,7 +252,9 @@ impl Eq for Token {
             RPAREN => match *other { RPAREN => true, _ => false },
             COLON => match *other { COLON => true, _ => false },
             RBRACKET => match *other { RBRACKET => true, _ => false },
-            LBRACKET => match *other { LBRACKET => true, _ => false }
+            LBRACKET => match *other { LBRACKET => true, _ => false },
+            TokInt(i) => match *other { TokInt(ii) => i == ii, _ => false },
+            TokIden(ref s) => match *other { TokIden(ref ss) => s == ss, _ => false }
         }
     }
 }
@@ -279,15 +262,17 @@ impl Eq for Token {
 impl Show for Token {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let c = match *self {
-            PLUS => &"+",
-            MINUS => &"-",
-            INTEGER => &"integer",
-            IDEN => &"iden",
-            LPAREN => &"(",
-            RPAREN => &")",
-            COLON => ":",
-            LBRACKET => "[",
-            RBRACKET => "]"
+            PLUS => ~"+",
+            MINUS => ~"-",
+            INTEGER => ~"integer",
+            IDEN => ~"iden",
+            LPAREN => ~"(",
+            RPAREN => ~")",
+            COLON => ~":",
+            LBRACKET => ~"[",
+            RBRACKET => ~"]",
+            TokInt(i) => i.to_str(),
+            _ => ~""
         };
 
         write!(f.buf, "({})", c)
@@ -299,51 +284,60 @@ impl Show for Token {
 mod test {
     use super::Lexer;
     use super::LPAREN;
-    use super::TokenValue;
+    use super::Token;
+    use super::{PLUS,LPAREN, RPAREN, COLON, TokInt, TokIden};
 
     #[test]
     fn next_token() {
         // Should spit out two tokens (LPAREN,RPAREN)
         let mut lex = Lexer::new(&"()");
-        assert!(lex.next_token().unwrap().value == ~"(");
-        assert!(lex.next_token().unwrap().value == ~")");  
+        
+        match lex.next_token().unwrap() {
+            LPAREN => {},
+            _ => fail!("Unexpected token")
+        }
+        
+        match lex.next_token().unwrap() {
+            RPAREN => {},
+            _ => fail!("Unexpected token")
+        }
     }
 
     #[test]
     fn return_complex_tokens() {
         let mut lex = Lexer::new(&"(+(():830");
 
-        assert!(lex.next_token().unwrap().value == ~"(");
-        assert!(lex.next_token().unwrap().value == ~"+");
-        assert!(lex.next_token().unwrap().value == ~"(");
-        assert!(lex.next_token().unwrap().value == ~"(");
-        assert!(lex.next_token().unwrap().value == ~")");
-        assert!(lex.next_token().unwrap().value == ~":");
-        assert!(lex.next_token().unwrap().value == ~"8");
-        assert!(lex.next_token().unwrap().value == ~"3");
-        assert!(lex.next_token().unwrap().value == ~"0");
+        assert!(lex.next_token().unwrap() == super::LPAREN);
+        assert!(lex.next_token().unwrap() == super::PLUS);
+        assert!(lex.next_token().unwrap() == super::LPAREN);
+        assert!(lex.next_token().unwrap() == super::LPAREN);
+        assert!(lex.next_token().unwrap() == super::RPAREN);
+        assert!(lex.next_token().unwrap() == super::COLON);
+        assert!(lex.next_token().unwrap() == super::TokInt(8));
+        assert!(lex.next_token().unwrap() == super::TokInt(3));
+        assert!(lex.next_token().unwrap() == super::TokInt(0));
     }
 
     #[test]
     fn should_tokenize_identifier() {
         let mut lex = Lexer::new(&"(let)");
-        assert_eq!(lex.next_token().unwrap().value, ~"(");
-        assert_eq!(lex.next_token().unwrap().value, ~"let");
-        assert_eq!(lex.next_token().unwrap().value, ~")");
+        assert_eq!(lex.next_token().unwrap(), LPAREN);
+        assert_eq!(lex.next_token().unwrap(), TokIden(~"let"));
+        assert_eq!(lex.next_token().unwrap(), RPAREN);
     }
 
     #[test]
     fn should_forget_whitespace() {
         let mut lex = Lexer::new(&"( )");
-        assert_eq!(lex.next_token().unwrap().value, ~"(");
-        assert_eq!(lex.next_token().unwrap().value, ~")");
+        assert_eq!(lex.next_token().unwrap(), LPAREN);
+        assert_eq!(lex.next_token().unwrap(), RPAREN);
     }
 
     #[test]
     fn should_count_lines() {
         let mut lex = Lexer::new(&"(\n)");
-        assert_eq!(lex.next_token().unwrap().value, ~"(");
-        assert_eq!(lex.next_token().unwrap().value, ~")");
+        assert_eq!(lex.next_token().unwrap(), LPAREN);
+        assert_eq!(lex.next_token().unwrap(), RPAREN);
 
         assert_eq!(unsafe { (*lex.iter).line }, 2);
     }
@@ -351,16 +345,16 @@ mod test {
     #[test]
     fn should_identify_an_iden_across_lines() {
         let mut lex = Lexer::new(&"(\nlet\n)");
-        assert_eq!(lex.next_token().unwrap().value, ~"(");
-        assert_eq!(lex.next_token().unwrap().value, ~"let");
-        assert_eq!(lex.next_token().unwrap().value, ~")");
+        assert_eq!(lex.next_token().unwrap(), LPAREN);
+        assert_eq!(lex.next_token().unwrap(), TokIden(~"let"));
+        assert_eq!(lex.next_token().unwrap(), RPAREN);
     }
 
     #[test]
     fn should_test_iden_patterns() {
         let mut lex = Lexer::new(&"(\n*true*\n)");
-        assert_eq!(lex.next_token().unwrap().value, ~"(");
-        assert_eq!(lex.next_token().unwrap().value, ~"*true*");
-        assert_eq!(lex.next_token().unwrap().value, ~")");
+        assert_eq!(lex.next_token().unwrap(), LPAREN);
+        assert_eq!(lex.next_token().unwrap(), TokIden(~"*true*"));
+        assert_eq!(lex.next_token().unwrap(), RPAREN);
     }
 }
