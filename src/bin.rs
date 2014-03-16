@@ -15,6 +15,6 @@ mod ast;
 mod parser;
 
 fn main() {
-    let mut parser = parser::Parser::new(&"(let [x 1])");
+    let mut parser = parser::Parser::new(&"(let [x 19])");
     parser.parse_expression();
 }

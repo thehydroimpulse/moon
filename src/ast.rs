@@ -8,7 +8,7 @@ use std::cast::transmute;
 pub enum Ast {
     LetExprAst(~[~Ast], ~Ast),
     BindingExprAst(~str, ~Ast),
-    NumberExprAst(i32),
+    NumberExprAst(int),
     BinaryExprAst(lexer::Token, ~Ast, ~Ast),
     Empty
 }

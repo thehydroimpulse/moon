@@ -75,7 +75,7 @@ pub enum Token {
     COLON,
     LBRACKET,
     RBRACKET,
-    TokInt(i32),
+    TokInt(int),
     TokIden(~str)
 }
 
@@ -101,15 +101,39 @@ impl<'a> Lexer<'a> {
         unsafe { self.get(false) }
     }
 
-    pub fn number(&mut self, num: i32) -> Option<Token> {
-        let num = pow(10, log10(5.0) as uint +1) + 5;
-        None
+    pub fn number(&mut self, num: int) -> Option<Token> {
+        let mut number = num;
+        loop {
+            match unsafe { (*self.iter).peek() } {
+                Some(c) => {
+                    let next_num = match c {
+                        '9' => 9,
+                        '8' => 8,
+                        '7' => 7,
+                        '6' => 6,
+                        '5' => 5,
+                        '4' => 4,
+                        '3' => 3,
+                        '2' => 2,
+                        '1' => 1,
+                        '0' => 0,
+                        _ => { break }
+                    };
+
+                    unsafe { (*self.iter).next() };
+
+                    number = concat_number(number, next_num);
+                },
+                None => { break }
+            }
+        }
+        
+        Some(TokInt(number))
     }
 
     pub unsafe fn get(&mut self, peek: bool) -> Option<Token> {
         loop {
             
-
             match if peek {
                 (*self.iter).peek()
             } else {
@@ -306,9 +330,7 @@ mod test {
         assert!(lex.next_token().unwrap() == super::LPAREN);
         assert!(lex.next_token().unwrap() == super::RPAREN);
         assert!(lex.next_token().unwrap() == super::COLON);
-        assert!(lex.next_token().unwrap() == super::TokInt(8));
-        assert!(lex.next_token().unwrap() == super::TokInt(3));
-        assert!(lex.next_token().unwrap() == super::TokInt(0));
+        assert!(lex.next_token().unwrap() == super::TokInt(830));
     }
 
     #[test]
