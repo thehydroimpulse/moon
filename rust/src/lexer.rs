@@ -76,7 +76,9 @@ pub enum Token {
     IDEN, // Identifier
     LPAREN,
     RPAREN,
-    COLON
+    COLON,
+    LBRACKET,
+    RBRACKET
 }
 
 /// Lexer
@@ -103,6 +105,8 @@ impl<'a> Lexer<'a> {
                         (*self.iter).line += 1;
                         continue 
                     },
+                    '[' => return Some(TokenValue::new(LBRACKET, ~"[")),
+                    ']' => return Some(TokenValue::new(RBRACKET, ~"]")),
                     '(' => return Some(TokenValue::new(LPAREN, ~"(")),
                     ')' => return Some(TokenValue::new(RPAREN, ~")")),
                     '+' => return Some(TokenValue::new(PLUS, ~"+")),
@@ -139,9 +143,9 @@ impl<'a> Lexer<'a> {
                                     // Push the new chracter onto the current buffer.
                                     current.push_char(character);
 
-                                    //if is_iden(current) {
-                                    (*self.iter).next();
-                                    //}
+                                    if is_iden(current) {
+                                        (*self.iter).next();
+                                    }
 
                                     if !is_iden(current) && is_iden(previous) {
                                         return Some(TokenValue::new(IDEN, previous));
@@ -234,6 +238,8 @@ pub fn verify_iden_start(ch: char) -> bool {
         'v' => true,
         'W' => true,
         'w' => true,
+        'X' => true,
+        'x' => true,
         'Y' => true,
         'y' => true,
         'Z' => true,
@@ -255,7 +261,9 @@ impl Eq for Token {
             IDEN => match *other { IDEN => true, _ => false },
             LPAREN => match *other { LPAREN => true, _ => false },
             RPAREN => match *other { RPAREN => true, _ => false },
-            COLON => match *other { COLON => true, _ => false }
+            COLON => match *other { COLON => true, _ => false },
+            RBRACKET => match *other { RBRACKET => true, _ => false },
+            LBRACKET => match *other { LBRACKET => true, _ => false }
         }
     }
 }
@@ -269,7 +277,9 @@ impl Show for Token {
             IDEN => &"iden",
             LPAREN => &"(",
             RPAREN => &")",
-            COLON => ":"
+            COLON => ":",
+            LBRACKET => "[",
+            RBRACKET => "]"
         };
 
         write!(f.buf, "({})", c)
