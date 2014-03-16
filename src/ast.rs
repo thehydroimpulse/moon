@@ -4,8 +4,7 @@ use std::fmt::{Show,Formatter};
 use std::fmt;
 use std::cast::transmute;
 
-#[deriving(Clone)]
-#[deriving(Eq)]
+#[deriving(Eq, Clone, Show)]
 pub enum Ast {
     LetExprAst(~[~Ast], ~Ast),
     BindingExprAst(~str, ~Ast),
@@ -13,13 +12,6 @@ pub enum Ast {
     BinaryExprAst(lexer::Token, ~Ast, ~Ast),
     Empty
 }
-
-impl Show for Ast {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f.buf, "{}", "")
-    }
-}
-
 
 #[cfg(test)]
 mod test {

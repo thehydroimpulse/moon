@@ -55,8 +55,7 @@ impl<'a> LexerIterator<'a> {
 }
 
 /// Lexer tokens.
-#[deriving(Clone)]
-#[deriving(Eq)]
+#[deriving(Eq, Clone, Show)]
 pub enum Token {
     PLUS,
     MINUS,
@@ -257,28 +256,6 @@ pub fn verify_iden_start(ch: char) -> bool {
         _ => false 
     }
 }
-
-
-impl Show for Token {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        let c = match *self {
-            PLUS => ~"+",
-            MINUS => ~"-",
-            INTEGER => ~"integer",
-            IDEN => ~"iden",
-            LPAREN => ~"(",
-            RPAREN => ~")",
-            COLON => ~":",
-            LBRACKET => ~"[",
-            RBRACKET => ~"]",
-            TokInt(i) => i.to_str(),
-            _ => ~""
-        };
-
-        write!(f.buf, "({})", c)
-    }
-}
-
 
 #[cfg(test)]
 mod test {

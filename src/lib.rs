@@ -4,6 +4,8 @@
 #[allow(unused_imports)];
 #[allow(experimental)];
 
+extern crate serialize;
+
 mod vm;
 mod gc;
 mod lexer;
