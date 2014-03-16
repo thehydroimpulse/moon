@@ -1,7 +1,12 @@
 use lexer::TokenValue;
 use lexer;
-use ast::{Ast, NumberExprAst, VariableExprAst, BinaryExprAst};
+use ast::{Ast, NumberExprAst, BindingExprAst, LetExprAst, BinaryExprAst};
 use std::from_str;
+
+static BinaryPlusPrec: uint = 20;
+static BinaryMinusPrec: uint = 20;
+static BinaryMulPrec: uint = 40;
+static BinaryDivPrec: uint = 40;
 
 pub struct Parser<'a> {
     next_token: Option<TokenValue>,
@@ -31,7 +36,7 @@ impl<'a> Parser<'a> {
     }
 
     pub fn parse(&mut self) {
-
+        
     }
 
     pub fn parse_number(&mut self) -> Ast {
@@ -42,6 +47,54 @@ impl<'a> Parser<'a> {
         let expr = NumberExprAst(num);
         self.bump();
         return expr;
+    }
+
+    /// An expression is of the form:
+    /// 
+    /// (iden K..)
+    /// 
+    /// Where `K` is of any type.
+    /// 
+    /// @effect(Fail)
+    /// 
+    pub fn parse_expression(&mut self) -> Ast {
+        let mut tok = self.current_token.take().unwrap();
+
+        if tok.token != lexer::LPAREN {
+            fail!("Expected an expression to begin with `(` (left parentheses).");
+        }
+
+        // Parse an iden
+        self.bump();
+
+        tok = self.current_token.take().unwrap();
+
+        if tok.token != lexer::IDEN {
+            fail!("Expected an identifier next.");
+        }
+
+        self.bump();
+        return self.parse_form(tok);
+    }
+
+    pub fn parse_form(&mut self, tok: lexer::TokenValue) -> Ast {
+        match tok.value {
+            ~"defn" => fail!("Functions are not implemented yet."),
+            ~"let" => {
+                // Parse the bindings.
+                match self.current_token.take() {
+                    Some(r) => {
+                        if r.value == ~"[" {
+                            NumberExprAst(9)
+                        } else {
+                            fail!("Expected `[` token.")
+                        }
+                    },
+                    None => fail!("Expected `[` token, but found none.")
+                }
+            },
+            _ => fail!("Unimplemented form.")
+        }
     }
 }
 
@@ -62,14 +115,14 @@ mod test {
     }
 
     #[test]
-    fn parse_binary() {
-        let mut parser = Parser::new(&"9+5");
+    fn parse_expression() {
+        println!("")
+        let mut parser = Parser::new(&"(let [x 5])");
         parser.bump();
-        match parser.parse_number() {
-            NumberExprAst(r) => assert_eq!(r, 9),
-            _ => fail!("Not expected.")
-        }
-
+        //match parser.parse_expression() {
+        //    NumberExprAst(r) => assert_eq!(r, 9),
+        //    _ => fail!("Not expected.")
+        //}
 
     }
 }
