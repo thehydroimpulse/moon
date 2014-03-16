@@ -34,3 +34,20 @@ impl<'a> Parser<'a> {
         return expr;
     }
 }
+
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use ast::*;
+
+    #[test]
+    fn parse_number() {
+        let mut parser = Parser::new(&"9");
+        parser.bump();
+        match parser.parse_number() {
+            NumberExprAst(r) => assert_eq!(r, 9),
+            _ => fail!("Not expected.")
+        }
+    }
+}
