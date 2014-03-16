@@ -7,7 +7,7 @@ use ast::{Ast, LetExprAst, BindingExprAst, NumberExprAst, BinaryExprAst};
 /// A generic value within our virtual machine. A value
 /// can be anything defined within this enum.
 pub enum Value {
-  Int(i32),
+  Int(int),
   Str(~str),
   Pair(~Value, ~Value)
 }
@@ -17,7 +17,7 @@ pub enum OpCode {
   XSub(int, int),
   XMul(int, int),
   XDiv(int, int),
-  XPush,
+  XPush(~str, Value),
   XPop
 }
 
