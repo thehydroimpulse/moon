@@ -128,9 +128,20 @@ mod test {
     use lexer::*;
 
     #[test]
-    fn parse_expression() {
+    fn parse_let_expression() {
         let mut parser = Parser::new(&"(let [x 5])");
         let expr = LetExprAst(~[~BindingExprAst(~"x", ~NumberExprAst(5))], ~Empty);
+        assert_eq!(expr, parser.parse_expression());
+    }
+
+    #[test]
+    fn parse_multiple_let_bindings() {
+        let mut parser = Parser::new(&"(let [x 5
+                                             y 10])");
+        let expr = LetExprAst(~[
+            ~BindingExprAst(~"x", ~NumberExprAst(5)),
+            ~BindingExprAst(~"y", ~NumberExprAst(10))
+        ], ~Empty);
         assert_eq!(expr, parser.parse_expression());
     }
 }

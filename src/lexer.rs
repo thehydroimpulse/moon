@@ -2,6 +2,7 @@ use std::fmt::{Show,Formatter};
 use std::fmt;
 use std::cast::transmute;
 use std::str::CharRange;
+use std::num::{pow, log10};
 
 struct LexerIterator<'a> {
     string: &'a str,
@@ -54,6 +55,14 @@ impl<'a> LexerIterator<'a> {
 
 }
 
+pub fn concat_number(a: int, b: int) -> int {
+    let mut p = 10;
+    while b >= p {
+        p *= 10;
+    }
+    return a * p + b;
+}
+
 /// Lexer tokens.
 #[deriving(Eq, Clone, Show)]
 pub enum Token {
@@ -92,6 +101,11 @@ impl<'a> Lexer<'a> {
         unsafe { self.get(false) }
     }
 
+    pub fn number(&mut self, num: i32) -> Option<Token> {
+        let num = pow(10, log10(5.0) as uint +1) + 5;
+        None
+    }
+
     pub unsafe fn get(&mut self, peek: bool) -> Option<Token> {
         loop {
             
@@ -116,16 +130,16 @@ impl<'a> Lexer<'a> {
                         '+' => return Some(PLUS),
                         '-' => return Some(MINUS),
                         ':' => return Some(COLON),
-                        '9' => return Some(TokInt(9)),
-                        '8' => return Some(TokInt(8)),
-                        '7' => return Some(TokInt(7)),
-                        '6' => return Some(TokInt(6)),
-                        '5' => return Some(TokInt(5)),
-                        '4' => return Some(TokInt(4)),
-                        '3' => return Some(TokInt(3)),
-                        '2' => return Some(TokInt(2)),
-                        '1' => return Some(TokInt(1)),
-                        '0' => return Some(TokInt(0)),
+                        '9' => return self.number(9),
+                        '8' => return self.number(8),
+                        '7' => return self.number(7),
+                        '6' => return self.number(6),
+                        '5' => return self.number(5),
+                        '4' => return self.number(4),
+                        '3' => return self.number(3),
+                        '2' => return self.number(2),
+                        '1' => return self.number(1),
+                        '0' => return self.number(0),
                         _ => {
 
                             let mut current = ~"";
@@ -259,10 +273,12 @@ pub fn verify_iden_start(ch: char) -> bool {
 
 #[cfg(test)]
 mod test {
-    use super::Lexer;
-    use super::LPAREN;
-    use super::Token;
-    use super::{PLUS,LPAREN, RPAREN, COLON, TokInt, TokIden};
+    use super::*;
+
+    #[test]
+    fn test_concat_number() {
+        assert_eq!(concat_number(5, 10), 510);
+    }
 
     #[test]
     fn next_token() {

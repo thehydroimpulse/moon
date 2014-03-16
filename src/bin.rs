@@ -6,6 +6,8 @@
 
 extern crate serialize;
 
+use std::num::{pow, log10};
+
 mod vm;
 mod gc;
 mod lexer;
