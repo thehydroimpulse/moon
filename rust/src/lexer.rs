@@ -139,9 +139,9 @@ impl<'a> Lexer<'a> {
                                     // Push the new chracter onto the current buffer.
                                     current.push_char(character);
 
-                                    if is_iden(current) {
-                                        (*self.iter).next();
-                                    }
+                                    //if is_iden(current) {
+                                    (*self.iter).next();
+                                    //}
 
                                     if !is_iden(current) && is_iden(previous) {
                                         return Some(TokenValue::new(IDEN, previous));

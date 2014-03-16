@@ -59,7 +59,7 @@ impl<'a> Parser<'a> {
     /// 
     pub fn parse_expression(&mut self) -> Ast {
         let mut tok = self.current_token.take().unwrap();
-
+        
         if tok.token != lexer::LPAREN {
             fail!("Expected an expression to begin with `(` (left parentheses).");
         }
@@ -74,10 +74,14 @@ impl<'a> Parser<'a> {
         }
 
         self.bump();
-        return self.parse_form(tok);
+        //self.parse_form(tok);
+
+        NumberExprAst(1)
     }
 
     pub fn parse_form(&mut self, tok: lexer::TokenValue) -> Ast {
+        println!("{}", tok.value);
+        return NumberExprAst(4);
         match tok.value {
             ~"defn" => fail!("Functions are not implemented yet."),
             ~"let" => {
@@ -116,13 +120,12 @@ mod test {
 
     #[test]
     fn parse_expression() {
-        println!("")
         let mut parser = Parser::new(&"(let [x 5])");
         parser.bump();
+        parser.parse_expression();
         //match parser.parse_expression() {
         //    NumberExprAst(r) => assert_eq!(r, 9),
         //    _ => fail!("Not expected.")
         //}
-
     }
 }
