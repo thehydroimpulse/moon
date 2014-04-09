@@ -18,7 +18,6 @@
 *.app
 
 callgrind.out.*
-bin/
 
 CMakeCache.txt
 CMakeFiles
