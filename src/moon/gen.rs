@@ -1,6 +1,5 @@
-use vm::{OpCode, XAdd, XMul, XSub, XDiv, Int, Str, XPush, XPop};
+use vm::{OpCode,XAdd,XMul,XSub,XDiv,Int,XPush};
 use ast::{Ast,NumberExprAst,BindingExprAst};
-use lexer::{TokInt};
 
 
 pub fn gen_add(a: Ast, b: Ast) -> OpCode {
@@ -62,7 +61,7 @@ pub fn gen_binding(binding: Ast) -> OpCode {
 mod test {
     use super::*;
     use ast::{NumberExprAst,BindingExprAst};
-    use vm::{XAdd,XSub,XMul,XDiv,Value,Int,XPush};
+    use vm::{XAdd,XSub,XMul,XDiv,Int,XPush};
 
     #[test]
     fn test_gen_add() {

@@ -1,8 +1,5 @@
-use std::fmt::{Show,Formatter};
-use std::fmt;
 use std::cast::transmute;
 use std::str::CharRange;
-use std::num::{pow, log10};
 
 struct LexerIterator<'a> {
     string: &'a str,
@@ -45,7 +42,7 @@ impl<'a> LexerIterator<'a> {
 
     pub fn peek(&mut self) -> Option<char> {
         if self.string.len() != 0 && self.pos < self.string.len() {
-            let CharRange {ch, next} = self.string.char_range_at(self.pos);
+            let CharRange {ch, ..} = self.string.char_range_at(self.pos);
             self.peektok = Some(ch);
             Some(ch)
         } else {

@@ -29,3 +29,5 @@ testgc
 gc
 Testing
 CTestTestfile.cmake
+target/
+bin/

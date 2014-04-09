@@ -1,7 +1,6 @@
-use lexer::{Token, TokIden, TokInt, RBRACKET, LBRACKET, LPAREN, RPAREN, COLON, INTEGER, PLUS, MINUS};
+use lexer::{Token,TokIden,TokInt,RBRACKET,LBRACKET,LPAREN,RPAREN};
 use lexer;
-use ast::{Ast, NumberExprAst, BindingExprAst, LetExprAst, BinaryExprAst, Empty};
-use ast;
+use ast::{Ast,NumberExprAst,BindingExprAst,LetExprAst,Empty};
 
 pub struct Parser<'a> {
     lexer: lexer::Lexer<'a>
@@ -44,7 +43,7 @@ impl<'a> Parser<'a> {
                     _ => fail!("Expected an iden token.")
                 }
             },
-            TokIden(s) => {
+            TokIden(_) => {
                 fail!("Unexpected iden. Expected an expression.")
             }
             TokInt(i) => {
@@ -72,7 +71,7 @@ impl<'a> Parser<'a> {
                             loop {
                                 match self.bump() {
                                     Some(tt) => {
-                                        let expr = match tt {
+                                        match tt {
                                             TokIden(r) => {
                                                 println!("(iden {})", r);
                                                 // Parse another expression
@@ -85,7 +84,7 @@ impl<'a> Parser<'a> {
                                                 break
                                             },
                                             _ => break
-                                        };
+                                        }
                                     },
                                     None => break
                                 }
@@ -125,7 +124,6 @@ impl<'a> Parser<'a> {
 mod test {
     use super::*;
     use ast::*;
-    use lexer::*;
 
     #[test]
     fn parse_let_expression() {
