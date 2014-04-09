@@ -17,16 +17,9 @@
 *.out
 *.app
 
-callgrind.out.*
-
-CMakeCache.txt
-CMakeFiles
 ./Makefile
-cmake_install.cmake
-install_manifest.txt
 testgc
 gc
 Testing
 CTestTestfile.cmake
 target/
-bin/
