@@ -10,6 +10,27 @@
 ///
 /// Rust supports unicode, so does Moon. Each index is a character, **not**
 /// a byte.
-pub struct Reader {
+pub struct Reader<'a> {
 
+    // Current character position in the stream.
+    pos: int,
+
+    // Input stream of characters. This is currently just a string, however, it would be
+    // better to have a `Stream` trait being implemented by various protocols
+    // (strings, statics, files, stdin, etc...)
+    stream: &'a str,
+
+    current: char,
+    previous: char
+}
+
+impl<'a> Reader<'a> {
+    pub fn new(stream: &'a str) -> Reader<'a> {
+        Reader {
+            pos: 0,
+            stream: stream,
+            current: ' ',
+            previous: ' '
+        }
+    }
 }
