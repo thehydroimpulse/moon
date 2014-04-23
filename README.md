@@ -6,23 +6,35 @@ Something that has the goal of being used seriously, but more as an experiment t
 
 ```lisp
 (select :users
-  (and 
+  (and
     (where (> :age 18)
     (where (= :subscribed true)))))
 ```
 
-![Repl](https://raw.githubusercontent.com/TheHydroImpulse/moon/master/repl.png?token=565790__eyJzY29wZSI6IlJhd0Jsb2I6VGhlSHlkcm9JbXB1bHNlL21vb24vbWFzdGVyL3JlcGwucG5nIiwiZXhwaXJlcyI6MTM5NzYzMjQ4NH0%3D--9370c2e7357715c2b7ee09e315b87d226cac12c5)
+![Repl](../blob/master/repl.png?raw=true)
 
-## Goals
 
-The language should be super simple. It's more-or-less going to be used for short-running queries. Thus, the VM is going to be teared down consistently.
+## License
 
-* Rules/Functions
-* Keywords `:age`
-* Boolean
-* And, Or
-* `=`, `+`, `-`, `>`, `<`
+The MIT License (MIT)
 
-The runtime should also be fairly straightforward. The goal is to get LLVM's JIT engine integrated. Thus, Moon would be a JITed language. This would work perfectly as a query language. All the functions within moon could be implemented in any native language, including Rust. LLVM would provide this ability.
+Copyright (c) 2014 Daniel Fagnan <dnfagnan@gmail.com>
 
-Things like a Garbage Collector might not be super useful considering the short-lived lifecycle of the queries, but it's fun to implement.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
