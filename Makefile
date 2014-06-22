@@ -4,23 +4,21 @@ RUSTC_FLAGS ?=
 BINS = moon
 
 SRC = $(shell find src -name '*.rs')
-BIN_TARGETS = $(patsubst %,target/%,$(BINS))
-LIBCARGO = target/libmoon.timestamp
 
-all: $(BIN_TARGETS)
+all: libmoon moon test
 
-bin: libmoon src/bin/bin.rs
-	mkdir -p target && rustc -Ltarget --out-dir target src/bin/bin.rs
+moon: libmoon
+	mkdir -p target
+	$(RUSTC) $(RUST_FLAGS) -Ltarget --out-dir target src/bin/moon.rs
 
-$(LIBCARGO): $(SRC)
+libmoon: $(SRC)
 	mkdir -p target
 	$(RUSTC) $(RUSTC_FLAGS) --out-dir target src/moon/lib.rs
-	touch $(LIBCARGO)
 
-libmoon: $(LIBCARGO)
-
-$(BIN_TARGETS): target/%: src/bin/%.rs $(LIBCARGO)
-	$(RUSTC) $(RUSTC_FLAGS) -Ltarget --out-dir target $<
+test: $(SRC)
+	mkdir -p target
+	$(RUSTC) $(RUSTC_FLAGS) --test --out-dir target src/moon/lib.rs
+	./target/moon
 
 clean:
 	rm -rf target
