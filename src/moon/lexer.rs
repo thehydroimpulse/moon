@@ -1,17 +1,17 @@
 use std::str::Chars;
 use std::io::Reader;
+use std::str::SendStr;
 use span::Span;
+use std::str::Owned;
 
 #[deriving(PartialEq, Show)]
 pub enum Token {
-    DASH,
-    PLUS,
-    MINUS,
-    TIMES,
-    AT,
-    CARET,
-    LPAREN,
-    RPAREN,
+    Keyword(SendStr),
+    Dash,
+    Colon,
+    Caret,
+    LParen,
+    RParen,
     Noop,
     Done
 }
@@ -54,10 +54,23 @@ impl<'a> Lexer<'a> {
         };
 
         match c {
-            '(' => { self.token = LPAREN },
-            ')' => { self.token = RPAREN },
-            '^' => { self.token = CARET },
-            '-' => { self.token = DASH },
+            '(' => { self.token = LParen },
+            ')' => { self.token = RParen },
+            '^' => { self.token = Caret },
+            '-' => { self.token = Dash },
+            ':' => {
+                let mut keyword = String::new();
+                self.iter.next().while_some(|a| {
+                    if a.is_whitespace() || a == '(' || a == ')' || a == '^' || a == ':' {
+                        None
+                    } else {
+                        keyword.push_char(a);
+                        self.iter.next()
+                    }
+                });
+
+                self.token = Keyword(Owned(keyword));
+            },
             ch @ 'A'..'Z' | ch @ 'a'..'z' => {
                 println!("{}", ch);
             },
@@ -95,6 +108,7 @@ impl<'a> Lexer<'a> {
 mod test {
     use super::*;
     use span::Span;
+    use std::str::{Slice, Owned};
 
     #[test]
     fn noop() {
@@ -119,13 +133,20 @@ mod test {
     fn bump_lparen() {
         let mut lexer = Lexer::new("(");
         lexer.bump();
-        assert_eq!(lexer.token, LPAREN);
+        assert_eq!(lexer.token, LParen);
     }
 
     #[test]
     fn bump_rparen() {
         let mut lexer = Lexer::new(")");
         lexer.bump();
-        assert_eq!(lexer.token, RPAREN);
+        assert_eq!(lexer.token, RParen);
+    }
+
+    #[test]
+    fn bump_simple_keyword() {
+        let mut lexer = Lexer::new(":foo");
+        lexer.bump();
+        assert_eq!(lexer.token, Keyword(Slice("foo")));
     }
 }
