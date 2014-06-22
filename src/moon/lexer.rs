@@ -225,4 +225,11 @@ mod test {
         lexer.bump();
         assert_eq!(lexer.token, Ident("foo-bar-&#^".to_string()));
     }
+
+    #[test]
+    fn should_eat_lparen() {
+        let mut lexer = Lexer::new("(");
+        lexer.bump();
+        assert_eq!(lexer.eat(&LParen), true);
+    }
 }
