@@ -10,9 +10,6 @@ static color_magenta: &'static str = "\x1B[35m";
 static color_bold: &'static str = "\x1B[1m";
 
 fn main() {
-    //let mut parser = parser::Parser::new(&"(let [x 19])");
-    //parser.parse_expression();
-    
     let mut running = true;
 
     println!("moon alpha.");
@@ -23,7 +20,7 @@ fn main() {
         for line in io::stdin().lines() {
             match line {
                 Ok(line) => {
-                    if line == ~"exit\n" {
+                    if line == "exit\n".to_string() {
                         running = false;
                         break;
                     }

@@ -1,10 +1,8 @@
 #![crate_id = "moon"]
 #![crate_type = "lib"]
-#![feature(globs)]
+#![feature(globs, macro_rules)]
 #![allow(experimental)]
 
-mod vm;
-mod gc;
-mod ast;
-mod gen;
-mod reader;
+pub mod vm;
+pub mod ast;
+pub mod reader;
