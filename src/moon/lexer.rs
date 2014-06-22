@@ -61,11 +61,11 @@ impl<'a> Lexer<'a> {
             ':' => {
                 let mut keyword = String::new();
                 self.iter.next().while_some(|a| {
-                    if a.is_whitespace() || a == '(' || a == ')' || a == '^' || a == ':' {
-                        None
-                    } else {
+                    if self.is_keyword(a) {
                         keyword.push_char(a);
                         self.iter.next()
+                    } else {
+                        None
                     }
                 });
 
@@ -75,6 +75,17 @@ impl<'a> Lexer<'a> {
                 println!("{}", ch);
             },
             _ => {}
+        }
+    }
+
+    /// Verify if the char is within the allowed character set for keywords. This
+    /// only checks a single character at a time.
+    #[inline]
+    pub fn is_keyword(&self, a: char) -> bool {
+        if a.is_whitespace() || a == '(' || a == ')' || a == '^' || a == ':' {
+            false
+        } else {
+            true
         }
     }
 
