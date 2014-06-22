@@ -1,18 +1,51 @@
 # Moon [![status](http://img.shields.io/badge/stage-alpha-orange.svg)]() [![version](http://img.shields.io/badge/version-0.0.2-blue.svg)]()
 
-Something that has the goal of being used seriously, but more as an experiment than anything else. The experiment is to see if a Lisp-dialect could be used effectively as a replacement for SQL querying. Thus, you'd use Moon instead of good old SQL. Crazy? Perhaps.
+Moon is a small Lisp-dialect written purely in Rust. This should allow Rust programs (including games) to have access to a high-quality scripting language that's also safe. Moon is made to work extremely well with Rust or even C.
 
 ===
 
 ```lisp
-(select :users
-  (and
-    (where (> :age 18)
-    (where (= :subscribed true)))))
+(defn shoot
+    [player bullet]
+    ...)
+
+;; The core render loop for the scripting engine.
+;; On every tick, draw the ship.
+(defn render
+    [inter]
+    (draw-ship inter))
 ```
 
 ![Repl](../master/repl.png?raw=true)
 
+![Repl 2](../master/repl2.png?raw=true)
+
+## Installing
+
+Clone the repo:
+
+```
+git clone git@github.com:TheHydroImpulse/moon.git
+cd moon/
+```
+
+Build the project:
+
+```
+make moon
+```
+
+Access the Repl:
+
+```
+./target/moon
+```
+
+## Testing
+
+```
+make test
+```
 
 ## License
 

@@ -147,7 +147,7 @@ impl<'a> Lexer<'a> {
                 if self.is_ident(ch) {
                     ident.push_char(ch);
                 } else {
-                    fail!("Expected an ident but found {}", ch);
+                    // Push an `Unknown` token here.
                 }
 
                 self.iter.next().while_some(|a| {
