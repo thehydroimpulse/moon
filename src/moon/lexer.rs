@@ -6,6 +6,7 @@ use std::str::Owned;
 
 #[deriving(PartialEq, Show)]
 pub enum Token {
+    Ident(String),
     Str(String),
     Keyword(SendStr),
     Colon,
@@ -83,10 +84,34 @@ impl<'a> Lexer<'a> {
 
                 self.token = Str(concat);
             },
-            ch @ 'A'..'Z' | ch @ 'a'..'z' => {
-                println!("{}", ch);
-            },
-            _ => {}
+            // An identifier is composed of any
+            // characters that contain no whitespace
+            // and doesn't start with the designated
+            // characters above.
+            ch => {
+                let mut ident = String::new();
+                ident.push_char(ch);
+                self.iter.next().while_some(|a| {
+                    if self.is_ident(a) {
+                        ident.push_char(a);
+                        self.iter.next()
+                    } else {
+                        None
+                    }
+                });
+
+                self.token = Ident(ident);
+            }
+        }
+    }
+
+    /// Determine if a char is allowed within an identifier.
+    pub fn is_ident(&self, ch: char) -> bool {
+        if ch.is_whitespace() || ch == ':' || ch == '(' || ch == ')' || ch == '"'
+            || ch == '@' || ch == '!' {
+            false
+        } else {
+            true
         }
     }
 
@@ -194,4 +219,10 @@ mod test {
         assert_eq!(lexer.token, Str("hah-w091:--:".to_string()));
     }
 
+    #[test]
+    fn bump_ident() {
+        let mut lexer = Lexer::new("foo-bar-&#^");
+        lexer.bump();
+        assert_eq!(lexer.token, Ident("foo-bar-&#^".to_string()));
+    }
 }
