@@ -4,6 +4,8 @@
 extern crate moon;
 use std::io;
 
+use moon::lexer::Lexer;
+
 static color_normal: &'static str = "\x1B[0m";
 static color_red: &'static str = "\x1B[31m";
 static color_cyan: &'static str = "\x1B[36m";
@@ -26,7 +28,8 @@ fn main() {
                         break;
                     }
 
-                    print!("{}", line);
+                    let mut lexer = Lexer::new(line.as_slice());
+                    print!("{}\n", lexer.collect());
                 },
                 _ => {}
             }

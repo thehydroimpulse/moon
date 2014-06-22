@@ -12,7 +12,7 @@ use std::str::Owned;
 /// are **not** considered tokens, but, in fact regular identifiers.
 /// This allows us to implement these without the compiler
 /// to have any sort of knowledge of them.
-#[deriving(PartialEq, Show)]
+#[deriving(PartialEq, Show, Clone)]
 pub enum Token {
     Ident(String),
     Str(String),
@@ -35,6 +35,7 @@ pub struct Lexer<'a> {
     source: &'a str,
     iter: Chars<'a>,
     token: Token,
+    done: bool,
     span: Span
 }
 
@@ -47,15 +48,33 @@ impl<'a> Lexer<'a> {
             source: source,
             iter: source.chars(),
             token: Noop,
+            done: false,
             span: Span::new(0, 0)
         }
     }
 
+    pub fn collect(&mut self) -> Vec<Token> {
+        let mut vec = Vec::new();
+
+        self.bump().while_some(|tok| {
+            if tok != Done && tok != Noop {
+                vec.push(tok);
+            }
+
+            if !self.done {
+                self.bump()
+            } else {
+                None
+            }
+        });
+
+        vec
+    }
 
     /// Parse and fetch the next token in the text stream.
     /// This doesn't return the token, it stores it
     /// in the lexer.
-    pub fn bump(&mut self) {
+    pub fn bump(&mut self) -> Option<Token> {
         // Fetch the next token so that we can start matching
         // against it. If we don't return anything, we'll set
         // the token to `Done`, resulting in a completed lexer.
@@ -65,12 +84,16 @@ impl<'a> Lexer<'a> {
         let c = match self.iter.next() {
             Some(c) => c,
             None => {
+                self.done  = true;
                 self.token = Done;
-                return;
+                return None;
             }
         };
 
         match c {
+            ' ' => { return self.bump() },
+            '\n' => { return self.bump() },
+            '\t' => { return self.bump() },
             // Parse some simple tokens.
             '(' => { self.token = LParen },
             ')' => { self.token = RParen },
@@ -120,7 +143,13 @@ impl<'a> Lexer<'a> {
             // characters above.
             ch => {
                 let mut ident = String::new();
-                ident.push_char(ch);
+
+                if self.is_ident(ch) {
+                    ident.push_char(ch);
+                } else {
+                    fail!("Expected an ident but found {}", ch);
+                }
+
                 self.iter.next().while_some(|a| {
                     if self.is_ident(a) {
                         ident.push_char(a);
@@ -130,9 +159,13 @@ impl<'a> Lexer<'a> {
                     }
                 });
 
-                self.token = Ident(ident);
+                if ident.len() > 0 {
+                    self.token = Ident(ident);
+                }
             }
         }
+
+        Some(self.token.clone())
     }
 
     /// Determine if a char is allowed within an identifier.
@@ -147,7 +180,7 @@ impl<'a> Lexer<'a> {
     /// nor can we exclude them from the identifier format.
     pub fn is_ident(&self, ch: char) -> bool {
         if ch.is_whitespace() || ch == ':' || ch == '(' || ch == ')' || ch == '"'
-            || ch == '@' || ch == '!' {
+            || ch == '@' || ch == '!' || ch == '\n' || ch == '\t' {
             false
         } else {
             true
