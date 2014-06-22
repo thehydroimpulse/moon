@@ -20,4 +20,14 @@ impl Span {
             col: col
         }
     }
+
+    #[inline]
+    pub fn line(&mut self) {
+        self.line += 1;
+    }
+
+    #[inline]
+    pub fn col(&mut self) {
+        self.col += 1;
+    }
 }

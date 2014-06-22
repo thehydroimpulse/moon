@@ -1,5 +1,6 @@
 use std::str::Chars;
 use std::io::Reader;
+use span::Span;
 
 #[deriving(PartialEq, Show)]
 pub enum Token {
@@ -22,7 +23,8 @@ pub enum Token {
 pub struct Lexer<'a> {
     source: &'a str,
     iter: Chars<'a>,
-    token: Token
+    token: Token,
+    span: Span
 }
 
 impl<'a> Lexer<'a> {
@@ -30,7 +32,8 @@ impl<'a> Lexer<'a> {
         Lexer {
             source: source,
             iter: source.chars(),
-            token: Noop
+            token: Noop,
+            span: Span::new(0, 0)
         }
     }
 
