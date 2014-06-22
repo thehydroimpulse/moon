@@ -4,6 +4,14 @@ use std::str::SendStr;
 use span::Span;
 use std::str::Owned;
 
+/// A `Token` represents a special symbol within
+/// the language. These do not contain any extra metadata
+/// with it, that's stored elsewhere.
+///
+/// Unlike most languages, characters like `+`, `-`, `*`, `/`
+/// are **not** considered tokens, but, in fact regular identifiers.
+/// This allows us to implement these without the compiler
+/// to have any sort of knowledge of them.
 #[deriving(PartialEq, Show)]
 pub enum Token {
     Ident(String),
