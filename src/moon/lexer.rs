@@ -240,4 +240,11 @@ mod test {
         lexer.bump();
         lexer.expect(&LParen);
     }
+
+    #[test]
+    fn should_expect() {
+        let mut lexer = Lexer::new("(");
+        lexer.bump();
+        lexer.expect(&LParen);
+    }
 }
