@@ -82,3 +82,16 @@ impl<'a> Lexer<'a> {
         }
     }
 }
+
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn noop() {
+        let lexer = Lexer::new("foo");
+        assert_eq!(lexer.token, Noop);
+    }
+
+}
