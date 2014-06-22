@@ -1,4 +1,5 @@
 #![feature(globs)]
+#![allow(dead_code)]
 
 extern crate moon;
 use std::io;
@@ -12,7 +13,7 @@ static color_bold: &'static str = "\x1B[1m";
 fn main() {
     let mut running = true;
 
-    println!("moon alpha.");
+    println!("{:s}Moon{:s} alpha. v0.1.0 \n", color_cyan, color_normal);
 
     while running {
         print!("{:s}$moon{:s}{:s}>{:s} ", color_magenta, color_normal,
