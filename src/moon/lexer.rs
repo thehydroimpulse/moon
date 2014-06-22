@@ -4,6 +4,7 @@ use span::Span;
 
 #[deriving(PartialEq, Show)]
 pub enum Token {
+    DASH,
     PLUS,
     MINUS,
     TIMES,
@@ -52,9 +53,15 @@ impl<'a> Lexer<'a> {
             }
         };
 
-        // Begin parsing an s-expression.
-        if c == '(' {
-
+        match c {
+            '(' => { self.token = LPAREN },
+            ')' => { self.token = RPAREN },
+            '^' => { self.token = CARET },
+            '-' => { self.token = DASH },
+            ch @ 'A'..'Z' | ch @ 'a'..'z' => {
+                println!("{}", ch);
+            },
+            _ => {}
         }
     }
 
@@ -87,6 +94,7 @@ impl<'a> Lexer<'a> {
 #[cfg(test)]
 mod test {
     use super::*;
+    use span::Span;
 
     #[test]
     fn noop() {
@@ -94,4 +102,30 @@ mod test {
         assert_eq!(lexer.token, Noop);
     }
 
+    #[test]
+    fn zeroed_span() {
+        let lexer = Lexer::new("foo");
+        assert_eq!(lexer.span, Span::new(0, 0));
+    }
+
+    #[test]
+    fn bump_empty() {
+        let mut lexer = Lexer::new("");
+        lexer.bump();
+        assert_eq!(lexer.token, Done);
+    }
+
+    #[test]
+    fn bump_lparen() {
+        let mut lexer = Lexer::new("(");
+        lexer.bump();
+        assert_eq!(lexer.token, LPAREN);
+    }
+
+    #[test]
+    fn bump_rparen() {
+        let mut lexer = Lexer::new(")");
+        lexer.bump();
+        assert_eq!(lexer.token, RPAREN);
+    }
 }
