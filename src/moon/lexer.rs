@@ -7,7 +7,6 @@ use std::str::Owned;
 #[deriving(PartialEq, Show)]
 pub enum Token {
     Keyword(SendStr),
-    Dash,
     Colon,
     Caret,
     LParen,
@@ -57,7 +56,6 @@ impl<'a> Lexer<'a> {
             '(' => { self.token = LParen },
             ')' => { self.token = RParen },
             '^' => { self.token = Caret },
-            '-' => { self.token = Dash },
             ':' => {
                 let mut keyword = String::new();
                 self.iter.next().while_some(|a| {
@@ -160,4 +158,19 @@ mod test {
         lexer.bump();
         assert_eq!(lexer.token, Keyword(Slice("foo")));
     }
+
+    #[test]
+    fn bump_keyword_dash() {
+        let mut lexer = Lexer::new(":foo-");
+        lexer.bump();
+        assert_eq!(lexer.token, Keyword(Slice("foo-")));
+    }
+
+    #[test]
+    fn bump_keyword_dash_middle() {
+        let mut lexer = Lexer::new(":foo-bar");
+        lexer.bump();
+        assert_eq!(lexer.token, Keyword(Slice("foo-bar")));
+    }
+
 }
