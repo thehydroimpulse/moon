@@ -6,6 +6,7 @@ use std::str::Owned;
 
 #[deriving(PartialEq, Show)]
 pub enum Token {
+    Str(String),
     Keyword(SendStr),
     Colon,
     Caret,
@@ -68,6 +69,19 @@ impl<'a> Lexer<'a> {
                 });
 
                 self.token = Keyword(Owned(keyword));
+            },
+            '"' => {
+                let mut concat = String::new();
+                self.iter.next().while_some(|a| {
+                    if a == '"' {
+                        None
+                    } else {
+                        concat.push_char(a);
+                        self.iter.next()
+                    }
+                });
+
+                self.token = Str(concat);
             },
             ch @ 'A'..'Z' | ch @ 'a'..'z' => {
                 println!("{}", ch);
@@ -171,6 +185,13 @@ mod test {
         let mut lexer = Lexer::new(":foo-bar");
         lexer.bump();
         assert_eq!(lexer.token, Keyword(Slice("foo-bar")));
+    }
+
+    #[test]
+    fn bump_string() {
+        let mut lexer = Lexer::new("\"hah-w091:--:\"");
+        lexer.bump();
+        assert_eq!(lexer.token, Str("hah-w091:--:".to_string()));
     }
 
 }
