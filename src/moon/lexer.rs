@@ -8,15 +8,15 @@ use std::io::Reader;
 /// The lexer should also not consume the whole stream at once, as
 /// that will be a bottleneck for larger input sources.
 pub struct Lexer<'a> {
-  source: &'a str,
-  iter: Chars<'a>
+    source: &'a str,
+    iter: Chars<'a>
 }
 
 impl<'a> Lexer<'a> {
-  pub fn new(source: &'a str) -> Lexer<'a> {
-    Lexer {
-      source: source,
-      iter: source.chars()
+    pub fn new(source: &'a str) -> Lexer<'a> {
+        Lexer {
+            source: source,
+            iter: source.chars()
+        }
     }
-  }
 }
