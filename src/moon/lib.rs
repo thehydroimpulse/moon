@@ -7,3 +7,4 @@ pub mod vm;
 pub mod ast;
 pub mod reader;
 pub mod lexer;
+pub mod span;
