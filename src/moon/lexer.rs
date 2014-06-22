@@ -232,4 +232,12 @@ mod test {
         lexer.bump();
         assert_eq!(lexer.eat(&LParen), true);
     }
+
+    #[test]
+    #[should_fail]
+    fn should_expect_lparen() {
+        let mut lexer = Lexer::new(")");
+        lexer.bump();
+        lexer.expect(&LParen);
+    }
 }
