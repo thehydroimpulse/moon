@@ -31,6 +31,9 @@ pub struct Lexer<'a> {
 }
 
 impl<'a> Lexer<'a> {
+    /// Return a brand new lexer containing an iterator
+    /// of chars and a bunch of state to keep track of (such
+    /// as the current Span).
     pub fn new(source: &'a str) -> Lexer<'a> {
         Lexer {
             source: source,
@@ -45,7 +48,12 @@ impl<'a> Lexer<'a> {
     /// This doesn't return the token, it stores it
     /// in the lexer.
     pub fn bump(&mut self) {
-        // Fetch the next char.
+        // Fetch the next token so that we can start matching
+        // against it. If we don't return anything, we'll set
+        // the token to `Done`, resulting in a completed lexer.
+        //
+        // FIXME: I don't think I'm checking for a `None` case
+        //        anywhere else.
         let c = match self.iter.next() {
             Some(c) => c,
             None => {
@@ -55,9 +63,13 @@ impl<'a> Lexer<'a> {
         };
 
         match c {
+            // Parse some simple tokens.
             '(' => { self.token = LParen },
             ')' => { self.token = RParen },
             '^' => { self.token = Caret },
+            // Parse a simple keyword. Keywords are somewhat like
+            // strings, but, they're more limited in the format, but
+            // a lot nicer to use.
             ':' => {
                 let mut keyword = String::new();
                 self.iter.next().while_some(|a| {
@@ -71,6 +83,16 @@ impl<'a> Lexer<'a> {
 
                 self.token = Keyword(Owned(keyword));
             },
+            // Parse the beginning of a string until we find the ending
+            // quote. Anything can be placed within the double quotes.
+            //
+            // This doesn't support any escaping yet, so that'll break.
+            // To support it, we'll need to keep track of the previous
+            // token. Finding a `\` character will result in it
+            // being saved until we look at the next character; which
+            // we'll look back at the previous character to figure
+            // out our current state. Escaping will only be set if
+            // it matches a good escape pattern.
             '"' => {
                 let mut concat = String::new();
                 self.iter.next().while_some(|a| {
@@ -106,6 +128,15 @@ impl<'a> Lexer<'a> {
     }
 
     /// Determine if a char is allowed within an identifier.
+    /// An identifier can be used for:
+    ///
+    /// * Function names
+    /// * Binding names
+    /// * Other
+    ///
+    /// Because many of the built-in forms have identifiers
+    /// such as `+`, `-`, `*`, `/`, we can't make these tokens,
+    /// nor can we exclude them from the identifier format.
     pub fn is_ident(&self, ch: char) -> bool {
         if ch.is_whitespace() || ch == ':' || ch == '(' || ch == ')' || ch == '"'
             || ch == '@' || ch == '!' {
