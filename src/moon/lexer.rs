@@ -3,6 +3,7 @@ use std::io::Reader;
 use std::str::SendStr;
 use span::Span;
 use std::str::Owned;
+use std::from_str::from_str;
 
 /// A `Token` represents a special symbol within
 /// the language. These do not contain any extra metadata
@@ -16,6 +17,10 @@ use std::str::Owned;
 pub enum Token {
     Ident(String),
     Str(String),
+    Integer(i64),
+    LBracket,
+    RBracket,
+    Comma,
     Keyword(SendStr),
     Colon,
     Caret,
@@ -94,10 +99,36 @@ impl<'a> Lexer<'a> {
             ' ' => { return self.bump() },
             '\n' => { return self.bump() },
             '\t' => { return self.bump() },
+            ',' => { self.token = Comma },
             // Parse some simple tokens.
             '(' => { self.token = LParen },
             ')' => { self.token = RParen },
             '^' => { self.token = Caret },
+            '[' => { self.token = LBracket },
+            ']' => { self.token = RBracket },
+            num @ '0'..'9' => {
+                let mut combined = String::new();
+                combined.push_char(num);
+
+                self.iter.next().while_some(|n| {
+
+                    match n {
+                       '0'..'9' => combined.push_char(n),
+                        '\n' => { return None; },
+                        n if n.is_whitespace() => { return None; },
+                        _ => fail!("A number must be isolated from other tokens.")
+                    }
+
+                    self.iter.next()
+                });
+
+                let num = match from_str::<i64>(combined.as_slice()) {
+                    Some(num) => num,
+                    None => fail!("Not a number.")
+                };
+
+                self.token = Integer(num);
+            },
             // Parse a simple keyword. Keywords are somewhat like
             // strings, but, they're more limited in the format, but
             // a lot nicer to use.
@@ -180,7 +211,7 @@ impl<'a> Lexer<'a> {
     /// nor can we exclude them from the identifier format.
     pub fn is_ident(&self, ch: char) -> bool {
         if ch.is_whitespace() || ch == ':' || ch == '(' || ch == ')' || ch == '"'
-            || ch == '@' || ch == '!' || ch == '\n' || ch == '\t' {
+            || ch == '@' || ch == '!' || ch == '\n' || ch == '\t' || ch == ',' {
             false
         } else {
             true
@@ -191,7 +222,7 @@ impl<'a> Lexer<'a> {
     /// only checks a single character at a time.
     #[inline]
     pub fn is_keyword(&self, a: char) -> bool {
-        if a.is_whitespace() || a == '(' || a == ')' || a == '^' || a == ':' {
+        if a.is_whitespace() || a == '(' || a == ')' || a == '^' || a == ':' || a == ',' {
             false
         } else {
             true
