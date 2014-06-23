@@ -106,7 +106,7 @@ impl<'a> Lexer<'a> {
             '^' => { self.token = Caret },
             '[' => { self.token = LBracket },
             ']' => { self.token = RBracket },
-            num @ '0'..'9' => {
+            num @ '0'..'9' | num @ '-' => {
                 let mut combined = String::new();
                 combined.push_char(num);
 
