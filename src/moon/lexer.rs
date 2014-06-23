@@ -5,6 +5,14 @@ use span::Span;
 use std::str::Owned;
 use std::from_str::from_str;
 
+fn is_num_type(n: char) -> bool {
+    if n != '6' && n != '4' && n != '8' && n != '3' && n != '2' {
+        false
+    } else {
+        true
+    }
+}
+
 /// A `Token` represents a special symbol within
 /// the language. These do not contain any extra metadata
 /// with it, that's stored elsewhere.
@@ -28,6 +36,25 @@ pub enum Token {
     RParen,
     Noop,
     Done
+}
+
+#[deriving(PartialEq, Show, Clone)]
+pub enum IntegerParserState {
+    NumInit,
+    /// We have found a type (such as `6u`, `9i`, etc..),
+    /// however, we might have more information coming up, such as
+    /// the specialization of the type.
+    NumTyped(String),
+
+    /// This means we have seen a typed integer, but not a fully
+    /// specialized one.
+    NumTypedPartial(String),
+
+    /// The integer type has been more specific. This allows us
+    /// to know when we have successfully specialized an integer.
+    /// However, we still need an intermediate step to where
+    /// the integer has been typed, but not fully specialized.
+    NumTypedSpecialized(String)
 }
 
 /// The lexer is the system that has any notion of an input stream. The
@@ -107,15 +134,69 @@ impl<'a> Lexer<'a> {
             '[' => { self.token = LBracket },
             ']' => { self.token = RBracket },
             num @ '0'..'9' | num @ '-' => {
+                // Hold a collection of numbered chars so that
+                // we can convert to a proper number format later.
                 let mut combined = String::new();
+
+                // We need to keep track of the current state
+                // for the integer. This let's us know whether
+                // we're parsing a specialization, or the user
+                // has supplied an invalid form.
+                let mut state = NumInit;
+
+                // We need to push the one char we grabbed before
+                // all the while_some stuff.
                 combined.push_char(num);
 
+                // Iterate over the next char until we return
+                // `None` or the iterator returns `None`.
                 self.iter.next().while_some(|n| {
 
                     match n {
-                       '0'..'9' => combined.push_char(n),
-                        '\n' => { return None; },
-                        n if n.is_whitespace() => { return None; },
+                        // Ok, so we have a simple number, that's
+                        // pretty easy. Simply push the char
+                        // to the string.
+                        //
+                        // However, we need to first check
+                        // what state we're in, currently.
+                        '0'..'9' => {
+                            match state.clone() {
+                                // We haven't seen any further information
+                                // about the integer, so we can just
+                                // push the char onto the string normally.
+                                NumInit => combined.push_char(n),
+                                NumTyped(ref kind) => {
+                                    if !is_num_type(n) {
+                                        fail!("Unexpected specializer {}", n);
+                                    }
+
+                                    let mut s = kind.clone();
+                                    s.push_char(n);
+                                    state = NumTypedPartial(s);
+                                },
+                                NumTypedPartial(ref kind) => {
+                                    if !is_num_type(n) {
+                                        fail!("Unexpected specializer {}", n);
+                                    }
+
+                                    if kind.as_slice() == "u8" {
+                                        fail!("Unexpected character {}, expected nothing.", n);
+                                    }
+
+                                    let mut s = kind.clone();
+                                    s.push_char(n);
+                                    let rev = kind.as_slice().chars().last();
+                                    state = NumTypedSpecialized(s);
+                                },
+                                NumTypedSpecialized(ref kind) => {
+                                    println!("x {}", n);
+                                }
+                            }
+                        },
+                        'u' => state = NumTyped("u".to_string()),
+                        'i' => state = NumTyped("i".to_string()),
+                        '\n' => return None,
+                        n if n.is_whitespace() => return None,
                         _ => fail!("A number must be isolated from other tokens.")
                     }
 
