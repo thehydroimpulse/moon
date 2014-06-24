@@ -1,4 +1,4 @@
-# Moon [![status](http://img.shields.io/badge/stage-alpha-orange.svg)]() [![version](http://img.shields.io/badge/version-0.0.2-blue.svg)]()
+# Moon [![status](http://img.shields.io/badge/stage-alpha-orange.svg)]() [![version](http://img.shields.io/badge/cargo-0.1.0-blue.svg)]()
 
 Moon is a small Lisp-dialect written purely in Rust. This should allow Rust programs (including games) to have access to a high-quality scripting language that's also safe. Moon is made to work extremely well with Rust or even C.
 
